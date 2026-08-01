@@ -118,10 +118,58 @@ class BallomConsole {
     return response.json();
   }
 
+  decodeBase64Utf8(base64) {
+    const binary = atob(base64.replace(/\s/g, ''));
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) {
+      bytes[i] = binary.charCodeAt(i);
+    }
+    return new TextDecoder().decode(bytes);
+  }
+
+  encodeBase64Utf8(str) {
+    const bytes = new TextEncoder().encode(str);
+    let binary = '';
+    for (let i = 0; i < bytes.length; i++) {
+      binary += String.fromCharCode(bytes[i]);
+    }
+    return btoa(binary);
+  }
+
+  connectFromTopbar() {
+    const topInput = document.getElementById('gh-token-input-top');
+    if (topInput && topInput.value.trim()) {
+      const wallInput = document.getElementById('gh-token-input');
+      if (wallInput) wallInput.value = topInput.value.trim();
+    }
+    this.connectVault();
+  }
+
+  disconnectVault() {
+    localStorage.removeItem('ballom_github_token');
+    this.token = null;
+    this.state = null;
+
+    const topDisc = document.getElementById('topbar-disconnected');
+    const topConn = document.getElementById('topbar-connected');
+    if (topDisc) topDisc.classList.remove('hidden');
+    if (topConn) topConn.classList.add('hidden');
+
+    const connWall = document.getElementById('connection-wall');
+    if (connWall) connWall.classList.remove('hidden');
+
+    this.switchTab(this.currentTab);
+    this.showToast('Disconnected from Vault.', 'info');
+  }
+
   async connectVault() {
     const tokenEl = document.getElementById('gh-token-input');
     const repoEl = document.getElementById('storage-repo-input');
-    const tokenInput = tokenEl ? tokenEl.value.trim() : '';
+    let tokenInput = tokenEl ? tokenEl.value.trim() : '';
+    if (!tokenInput) {
+      const topEl = document.getElementById('gh-token-input-top');
+      if (topEl && topEl.value.trim()) tokenInput = topEl.value.trim();
+    }
     const repoInput = repoEl ? repoEl.value.trim() : '.ballom-storage';
 
     if (!tokenInput) {
@@ -152,15 +200,15 @@ class BallomConsole {
       await this.loadState();
 
       this.showToast(`Connected to Vault @${this.owner} (Dual-Repo Active)`, 'success');
-      const refreshBtn = document.getElementById('refresh-btn');
-      if (refreshBtn) refreshBtn.disabled = false;
-      const connectBtn = document.getElementById('connect-btn');
-      if (connectBtn) {
-        connectBtn.innerText = 'Connected';
-        connectBtn.className = 'btn btn-outline';
-      }
       
-      // Unveil the app UI
+      // Unveil topbar and main UI
+      const topDisc = document.getElementById('topbar-disconnected');
+      const topConn = document.getElementById('topbar-connected');
+      if (topDisc) topDisc.classList.add('hidden');
+      if (topConn) topConn.classList.remove('hidden');
+      const userBadge = document.getElementById('user-badge');
+      if (userBadge) userBadge.innerText = `@${this.owner}`;
+
       document.getElementById('connection-wall').classList.add('hidden');
       this.switchTab(this.currentTab);
     } catch (e) {
@@ -236,7 +284,7 @@ class BallomConsole {
       const fileData = await this.githubRequest(
         `/repos/${this.owner}/${this.repo}/contents/ballom.json?_t=${Date.now()}`
       );
-      const content = atob(fileData.content.replace(/\s/g, ''));
+      const content = this.decodeBase64Utf8(fileData.content);
       this.state = JSON.parse(content);
       this.stateSha = fileData.sha;
       this.renderAll();
@@ -278,7 +326,7 @@ class BallomConsole {
           }
         } catch { /* File does not exist yet */ }
 
-        const base64Content = btoa(unescape(encodeURIComponent(JSON.stringify(this.state, null, 2))));
+        const base64Content = this.encodeBase64Utf8(JSON.stringify(this.state, null, 2));
         
         const payload = {
           message: `Ballom Console: ${message}`,
