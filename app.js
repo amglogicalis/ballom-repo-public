@@ -524,30 +524,52 @@ class BallomConsole {
       const card = document.createElement('div');
       card.className = 'card phantom-card';
       const cdnUrl = `https://${this.owner}.github.io/${this.cdnRepo}/phantoms/${p.phantomId}/`;
+      const tldBadge = p.tldExt || '.is-a.dev';
+      const idleMin = p.backSheds?.idleTimeoutMinutes || 15;
+      const backupTarget = p.backSheds?.backupTargetUrl;
+
       card.innerHTML = `
         <div class="phantom-header">
           <div class="phantom-title-group">
-            <h4>${p.title || 'Untitled Phantom'}</h4>
-            <div class="phantom-domain">${p.maskedDomain}</div>
+            <h4 class="text-white font-md mb-1">${p.title || p.appName || 'Untitled Feromask'}</h4>
+            <div class="phantom-domain text-indigo font-mono font-bold" style="font-size: 13px;">${p.maskedDomain}</div>
           </div>
-          <span class="badge ${p.mode === 'iframe' ? 'badge-purple' : 'badge-emerald'}">${p.mode}</span>
+          <div class="d-flex gap-1 flex-column align-items-end">
+            <span class="badge badge-purple" style="font-size: 10px;">${tldBadge}</span>
+            <span class="badge badge-emerald" style="font-size: 9px;" title="BackSheds HA Shield Active">🛡️ BackSheds HA</span>
+          </div>
         </div>
         <div class="phantom-details">
-          <div class="mb-4">
-            <label style="font-size: 9px;">Destination target</label>
-            <div class="font-mono font-sm" style="word-break: break-all;"><a href="${p.targetUrl}" target="_blank">${p.targetUrl}</a></div>
+          <div class="mb-2">
+            <label style="font-size: 9px;" class="text-muted">Target Source URL</label>
+            <div class="font-mono font-sm" style="word-break: break-all;"><a href="${p.targetUrl}" target="_blank" class="text-indigo">${p.targetUrl}</a></div>
           </div>
-          <div>
-            <label style="font-size: 9px;">Pages CDN Deployment</label>
-            <div class="font-mono font-sm" style="word-break: break-all;"><a href="${cdnUrl}" target="_blank">${cdnUrl}</a></div>
+          ${backupTarget ? `
+          <div class="mb-2">
+            <label style="font-size: 9px;" class="text-muted">Backup Failover Target</label>
+            <div class="font-mono font-sm text-emerald" style="word-break: break-all;">🛡️ ${backupTarget}</div>
+          </div>` : ''}
+          <div class="mb-2">
+            <label style="font-size: 9px;" class="text-muted">Pages CDN Delivery</label>
+            <div class="font-mono font-sm" style="word-break: break-all;"><a href="${cdnUrl}" target="_blank" class="text-emerald">${cdnUrl}</a></div>
+          </div>
+          <div class="mt-2 p-2 bg-black-05 rounded d-flex justify-content-between align-items-center" style="font-size: 10px;">
+            <span class="text-muted">⏱️ Idle Action Timeout:</span>
+            <span class="badge badge-amber" style="font-size: 9px;">${idleMin} min auto-sleep</span>
           </div>
         </div>
-        <div class="phantom-footer">
+        <div class="phantom-footer mt-3">
           <div class="status-dot-group">
             <span class="status-dot ${p.active ? 'active' : 'inactive'}"></span>
             <span>${p.active ? 'LIVE' : 'INACTIVE'}</span>
           </div>
           <div class="gap-2 d-flex">
+            <a href="${cdnUrl}" target="_blank" class="btn btn-sm btn-outline">Visit</a>
+            <button class="btn btn-sm btn-rose" onclick="app.deletePhantom('${p.phantomId}')">Delete</button>
+          </div>
+        </div>`;
+      container.appendChild(card);
+    });
             <button class="btn btn-outline btn-sm" onclick="app.deletePhantom('${p.phantomId}')">Delete</button>
           </div>
         </div>`;
@@ -782,35 +804,45 @@ class BallomConsole {
   // 🎭 Feromask Handler
   async handleCreatePhantom(e) {
     e.preventDefault();
-    const target = document.getElementById('phantom-target').value;
-    const domain = document.getElementById('phantom-domain').value;
-    const mode = document.getElementById('phantom-mode').value;
-    const title = document.getElementById('phantom-title').value;
-    const desc = document.getElementById('phantom-desc').value;
+    const target = document.getElementById('phantom-target').value.trim();
+    const appName = document.getElementById('phantom-app-name').value.trim();
+    const tldExt = document.getElementById('phantom-tld-ext').value;
+    const backupTarget = document.getElementById('phantom-backup-target').value.trim();
+    const idleTimeout = document.getElementById('phantom-idle-timeout').value;
+    const title = document.getElementById('phantom-title').value.trim();
+    const desc = document.getElementById('phantom-desc').value.trim();
 
+    const maskedDomain = tldExt === 'custom' ? appName : `${appName}${tldExt}`;
     const phantomId = `ph_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`;
     const now = new Date().toISOString();
 
     const phantom = {
       phantomId,
       targetUrl: target,
-      maskedDomain: domain,
-      mode,
+      maskedDomain,
+      mode: 'iframe',
+      tldExt,
+      appName,
       title,
       description: desc,
+      backSheds: {
+        backupTargetUrl: backupTarget || null,
+        idleTimeoutMinutes: parseInt(idleTimeout || '15', 10),
+        status: 'active_shield'
+      },
       createdAt: now,
       updatedAt: now,
       active: true
     };
 
-    if (mode === 'iframe') {
-      const html = `<!DOCTYPE html>
+    const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>${title || 'Loading...'}</title>
+  <title>${title || appName}</title>
   ${desc ? `<meta name="description" content="${desc}" />` : ''}
+  <!-- BALLOM Feromask Sheds & BackSheds Page — Terra Ecosystem -->
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html, body { width: 100%; height: 100%; overflow: hidden; }
@@ -818,12 +850,19 @@ class BallomConsole {
   </style>
 </head>
 <body>
-  <iframe src="${target}" title="${title}" allowfullscreen></iframe>
-  <noscript><p>Redirecting to <a href="${target}">${target}</a>…</p></noscript>
-</body>
+  <iframe
+    src="${target}"
+    title="${title || appName}"
+    allowfullscreen
+    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+  ></iframe>
+  <noscript>
+    <p>Redirecting to <a href="${target}">${target}</a>…</p>
+  </noscript>
+  </body>
 </html>`;
-      await this.writeCdnFile(`phantoms/${phantomId}/index.html`, html, `Ballom: Create iframe phantom ${phantomId}`);
-    }
+
+    await this.writeCdnFile(`phantoms/${phantomId}/index.html`, html, `Ballom Feromask: Create phantom ${phantomId} (${maskedDomain})`);
 
     this.state.phantoms[phantomId] = phantom;
     this.state.auditLog.push({
@@ -831,12 +870,13 @@ class BallomConsole {
       action: 'feromask:create',
       entity: 'phantom',
       entityId: phantomId,
-      metadata: { targetUrl: target, maskedDomain: domain, mode }
+      metadata: { targetUrl: target, maskedDomain, tldExt: phantom.tldExt, idleTimeout: phantom.backSheds?.idleTimeoutMinutes }
     });
 
-    await this.saveState(`Create phantom ${phantomId}`);
+    await this.saveState(`Create Feromask phantom ${phantomId}`);
     this.closeModal('create-phantom-modal');
     document.getElementById('create-phantom-form').reset();
+    this.showToast(`Feromask Phantom ${maskedDomain} created successfully!`, 'success');
     this.renderAll();
   }
 
