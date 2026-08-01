@@ -81,12 +81,23 @@
           <p id="current-tab-desc" class="subtitle">Overview of your phantom assets and gateway routes</p>
         </div>
 
-        <div class="topbar-actions">
-          <div class="vault-badges d-flex gap-2">
-            <span class="badge badge-indigo" style="font-size: 10px; padding: 4px 8px;" title="Private Security Vault">🔒 .ballom-storage (Vault)</span>
-            <span class="badge badge-emerald" style="font-size: 10px; padding: 4px 8px;" title="Public Pages CDN">🌐 ballom-cdn (Pages)</span>
+        <div class="topbar-actions d-flex align-items-center gap-3">
+          <!-- Disconnected state in topbar -->
+          <div id="topbar-disconnected" class="d-flex align-items-center gap-2">
+            <input type="password" id="gh-token-input-top" placeholder="GitHub PAT (ghp_...)" style="width: 170px; background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 8px; padding: 6px 10px; color: #fff; font-size: 11px;">
+            <button class="btn btn-sm btn-primary" onclick="app.connectFromTopbar()">Connect</button>
           </div>
-          <button id="refresh-btn" class="btn btn-icon" title="Refresh state" disabled onclick="app.loadState()">🔄</button>
+
+          <!-- Connected state in topbar -->
+          <div id="topbar-connected" class="d-flex align-items-center gap-2 hidden">
+            <span id="user-badge" class="badge badge-purple" style="font-size: 11px; padding: 5px 10px;">@user</span>
+            <div class="vault-badges d-flex gap-2">
+              <span class="badge badge-indigo" style="font-size: 10px; padding: 4px 8px;" title="Private Security Vault">🔒 .ballom-storage</span>
+              <span class="badge badge-emerald" style="font-size: 10px; padding: 4px 8px;" title="Public Pages CDN">🌐 ballom-cdn</span>
+            </div>
+            <button id="refresh-btn" class="btn btn-icon" title="Refresh state" onclick="app.loadState()">🔄</button>
+            <button id="disconnect-btn" class="btn btn-sm btn-outline-rose" style="border: 1px solid var(--accent-rose); color: var(--accent-rose); background: transparent; border-radius: 8px; font-weight: 600; font-size: 11px; padding: 4px 10px;" onclick="app.disconnectVault()">Disconnect</button>
+          </div>
         </div>
       </header>
 
