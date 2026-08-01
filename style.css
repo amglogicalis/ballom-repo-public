@@ -5,19 +5,19 @@
 
 :root {
   /* Colors */
-  --bg-dark: #07040f;
-  --bg-card: rgba(20, 15, 38, 0.45);
-  --bg-card-hover: rgba(28, 20, 54, 0.6);
+  --bg-dark: #080c14;
+  --bg-card: rgba(14, 21, 33, 0.5);
+  --bg-card-hover: rgba(22, 32, 49, 0.65);
   --border: rgba(255, 255, 255, 0.08);
-  --border-focus: rgba(168, 85, 247, 0.4);
+  --border-focus: rgba(180, 213, 231, 0.4);
   
-  --primary: #a855f7;      /* Violet */
-  --primary-glow: rgba(168, 85, 247, 0.25);
-  --secondary: #ec4899;    /* Rose Pink */
+  --primary: #b4d5e7;      /* Ice Blue Logo Color */
+  --primary-glow: rgba(180, 213, 231, 0.25);
+  --secondary: #88b0cc;    /* Soft Slate Blue */
   
   --accent-emerald: #10b981;
-  --accent-blue: #3b82f6;
-  --accent-amber: #f59e0b;
+  --accent-blue: #b4d5e7;
+  --accent-amber: #eab308;
   --accent-indigo: #6366f1;
   --accent-rose: #f43f5e;
   
@@ -32,7 +32,7 @@
   /* Blurs & Shadows */
   --blur: 24px;
   --shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-  --shadow-glow: 0 0 20px 0 rgba(168, 85, 247, 0.15);
+  --shadow-glow: 0 0 20px 0 rgba(180, 213, 231, 0.15);
   
   /* Transitions */
   --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
@@ -60,7 +60,7 @@ body {
   border-radius: 50%;
   filter: blur(140px);
   z-index: -1;
-  opacity: 0.15;
+  opacity: 0.12;
   pointer-events: none;
 }
 
@@ -83,7 +83,7 @@ body {
 .bg-glow-3 {
   width: 350px;
   height: 350px;
-  background-color: var(--accent-indigo);
+  background-color: var(--primary);
   top: 40%;
   left: 50%;
   transform: translateX(-50%);
@@ -98,7 +98,7 @@ body {
 /* SIDEBAR */
 .sidebar {
   width: 280px;
-  background: rgba(10, 6, 22, 0.7);
+  background: rgba(8, 12, 20, 0.75);
   backdrop-filter: blur(var(--blur));
   border-right: 1px solid var(--border);
   padding: 24px;
@@ -169,9 +169,9 @@ body {
 
 .nav-item.active {
   color: #fff;
-  background: rgba(168, 85, 247, 0.12);
-  border-color: rgba(168, 85, 247, 0.25);
-  box-shadow: 0 4px 15px rgba(168, 85, 247, 0.1);
+  background: var(--primary-glow);
+  border-color: rgba(180, 213, 231, 0.3);
+  box-shadow: 0 4px 15px rgba(180, 213, 231, 0.12);
 }
 
 .nav-item.active::before {
@@ -199,7 +199,7 @@ body {
   letter-spacing: 0.5px;
 }
 
-.badge-purple { background: rgba(168, 85, 247, 0.15); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.3); }
+.badge-purple { background: rgba(180, 213, 231, 0.15); color: #b4d5e7; border: 1px solid rgba(180, 213, 231, 0.3); }
 .badge-emerald { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
 .badge-blue { background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); }
 .badge-amber { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
@@ -230,7 +230,7 @@ body {
   display: flex;
   flex-direction: column;
   min-width: 0; /* Prevents overflow inside flex child */
-  background: rgba(7, 4, 15, 0.4);
+  background: rgba(0, 0, 0, 0.15);
 }
 
 /* TOP BAR */
@@ -241,7 +241,7 @@ body {
   padding: 24px 40px;
   border-bottom: 1px solid var(--border);
   backdrop-filter: blur(var(--blur));
-  background: rgba(7, 4, 15, 0.6);
+  background: rgba(8, 12, 20, 0.5);
   z-index: 9;
 }
 
@@ -335,8 +335,8 @@ body {
 
 .btn-primary {
   background: linear-gradient(135deg, var(--primary), var(--secondary));
-  color: #fff;
-  box-shadow: 0 4px 15px rgba(168, 85, 247, 0.25);
+  color: #080c14;
+  box-shadow: 0 4px 15px var(--primary-glow);
 }
 
 .btn-primary:hover:not(:disabled) {
@@ -940,7 +940,7 @@ textarea {
 .spinner {
   width: 40px;
   height: 40px;
-  border: 3px solid rgba(168, 85, 247, 0.1);
+  border: 3px solid rgba(180, 213, 231, 0.1);
   border-top-color: var(--primary);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
@@ -948,6 +948,27 @@ textarea {
 
 @keyframes spin {
   to { transform: rotate(360deg); }
+}
+
+/* BRAND LOGO IMAGE styling */
+.brand-logo-img {
+  height: 38px;
+  width: auto;
+  border-radius: 8px;
+  filter: drop-shadow(0 0 10px rgba(180, 213, 231, 0.35));
+}
+
+/* HORIZONTAL QUICK ACTIONS GRID */
+.quick-actions-horizontal {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+@media (max-width: 900px) {
+  .quick-actions-horizontal {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* HELPERS */
