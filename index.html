@@ -86,13 +86,8 @@
 
           <!-- Connected state in topbar -->
           <div id="topbar-connected" class="d-flex align-items-center gap-2 hidden">
-            <span id="user-badge" class="badge badge-purple" style="font-size: 11px; padding: 5px 10px;">@user</span>
-            <div class="vault-badges d-flex gap-2">
-              <span class="badge badge-indigo" style="font-size: 10px; padding: 4px 8px;" title="Private Security Vault">🔒 .ballom-storage</span>
-              <span class="badge badge-emerald" style="font-size: 10px; padding: 4px 8px;" title="Public Pages CDN">🌐 ballom-cdn</span>
-            </div>
-            <button id="refresh-btn" class="btn btn-icon" title="Refresh state" onclick="app.loadState()">🔄</button>
-            <button id="disconnect-btn" class="btn btn-sm btn-outline-rose" style="border: 1px solid var(--accent-rose); color: var(--accent-rose); background: transparent; border-radius: 8px; font-weight: 600; font-size: 11px; padding: 4px 10px;" onclick="app.disconnectVault()">Disconnect</button>
+            <span id="user-badge" class="badge badge-purple" style="font-size: 11px; padding: 5px 12px; font-weight: 600;">@user</span>
+            <button id="disconnect-btn" class="btn btn-sm btn-outline-rose" style="border: 1px solid var(--accent-rose); color: var(--accent-rose); background: transparent; border-radius: 8px; font-weight: 600; font-size: 11px; padding: 4px 12px;" onclick="app.disconnectVault()">Disconnect</button>
           </div>
         </div>
       </header>
@@ -130,8 +125,8 @@
         <!-- ────────────────────────────────────────── -->
         <!-- TAB: DASHBOARD -->
         <!-- ────────────────────────────────────────── -->
-        <div id="tab-dashboard" class="tab-content active hidden">
-          <div class="stats-grid">
+        <div id="tab-dashboard" class="tab-content hidden">
+          <div class="stats-grid mb-6">
             <div class="stat-card">
               <div class="stat-icon icon-purple">🎭</div>
               <div class="stat-info">
@@ -139,37 +134,86 @@
                 <span class="stat-label">Feromask Phantoms</span>
               </div>
             </div>
-                <button class="btn btn-action-card" onclick="app.switchTab('feromask')">
-                  <span class="action-icon">🎭</span>
-                  <div class="action-text">
-                    <h4>Create Feromask</h4>
-                    <p>Cloak any URL under free TLDs</p>
-                  </div>
-                </button>
-                <button class="btn btn-action-card" onclick="app.switchTab('chitingate')">
-                  <span class="action-icon">🔌</span>
-                  <div class="action-text">
-                    <h4>Create API Endpoint</h4>
-                    <p>Build static and dynamic endpoints</p>
-                  </div>
-                </button>
-                <button class="btn btn-action-card" onclick="app.switchTab('scentkey')">
-                  <span class="action-icon">🔑</span>
-                  <div class="action-text">
-                    <h4>Issue API Key</h4>
-                    <p>Generate ScentKeys for secure invocation</p>
-                  </div>
-                </button>
+            <div class="stat-card">
+              <div class="stat-icon icon-blue">🔌</div>
+              <div class="stat-info">
+                <span class="stat-value" id="stat-endpoints">0</span>
+                <span class="stat-label">ChitinGate Endpoints</span>
               </div>
             </div>
-
-            <!-- Hidden health metadata required for JS logic -->
-            <div class="hidden-health-elements" style="display: none !important;">
-              <span id="health-repo">-</span>
-              <span id="health-pages">-</span>
-              <span id="health-version">-</span>
-              <span id="health-audits">-</span>
+            <div class="stat-card">
+              <div class="stat-icon icon-amber">🥚</div>
+              <div class="stat-info">
+                <span class="stat-value" id="stat-larvae">0</span>
+                <span class="stat-label">Larvae Short Links</span>
+              </div>
             </div>
+            <div class="stat-card">
+              <div class="stat-icon icon-indigo">🐛</div>
+              <div class="stat-info">
+                <span class="stat-value" id="stat-routes">0</span>
+                <span class="stat-label">PheroPaths Routes</span>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon icon-rose">🔑</div>
+              <div class="stat-info">
+                <span class="stat-value" id="stat-scentkeys">0</span>
+                <span class="stat-label">Active ScentKeys</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Actions & Overview -->
+          <div class="card">
+            <div class="card-header">
+              <h3>⚡ Fast Access & Quick Actions</h3>
+            </div>
+            <div class="card-body quick-actions-horizontal">
+              <button class="btn btn-action-card" onclick="app.switchTab('feromask')">
+                <span class="action-icon">🎭</span>
+                <div class="action-text">
+                  <h4>Feromask Sheds & Shield</h4>
+                  <p>Cloak URLs under free TLDs with HA Shield</p>
+                </div>
+              </button>
+              <button class="btn btn-action-card" onclick="app.switchTab('chitingate')">
+                <span class="action-icon">🔌</span>
+                <div class="action-text">
+                  <h4>ChitinGate API Gateway</h4>
+                  <p>Create static & dynamic API endpoints</p>
+                </div>
+              </button>
+              <button class="btn btn-action-card" onclick="app.switchTab('larvae')">
+                <span class="action-icon">🥚</span>
+                <div class="action-text">
+                  <h4>Larvae Short Links</h4>
+                  <p>Create clean short links (/s/alias)</p>
+                </div>
+              </button>
+              <button class="btn btn-action-card" onclick="app.switchTab('pheropaths')">
+                <span class="action-icon">🐛</span>
+                <div class="action-text">
+                  <h4>PheroPaths Router</h4>
+                  <p>Configure smart traffic rules</p>
+                </div>
+              </button>
+              <button class="btn btn-action-card" onclick="app.switchTab('scentkey')">
+                <span class="action-icon">🔑</span>
+                <div class="action-text">
+                  <h4>ScentKey Security</h4>
+                  <p>Issue and manage API security keys</p>
+                </div>
+              </button>
+            </div>
+          </div>
+
+          <!-- Hidden health metadata required for JS logic -->
+          <div class="hidden-health-elements" style="display: none !important;">
+            <span id="health-repo">-</span>
+            <span id="health-pages">-</span>
+            <span id="health-version">-</span>
+            <span id="health-audits">-</span>
           </div>
         </div>
 
