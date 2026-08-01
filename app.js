@@ -679,26 +679,26 @@ class BallomConsole {
       return;
     }
 
-    routes.forEach(r => {
-      const row = document.createElement('tr');
-      row.innerHTML = `
-        <td><span class="badge badge-purple">${r.priority}</span></td>
-        <td><strong class="text-white">${r.name}</strong></td>
-        <td><code class="font-mono font-sm">${r.condition.matchType}:${r.condition.pattern}</code></td>
-        <td><span class="badge badge-indigo">${r.action}</span></td>
-        <td><code class="font-mono font-sm">${r.destination}</code></td>
-        <td><code class="font-mono font-sm">${r.fallback || '-'}</code></td>
-        <td>
-          <div class="status-dot-group">
-            <span class="status-dot ${r.active ? 'active' : 'inactive'}"></span>
-            <span>${r.active ? 'ACTIVE' : 'INACTIVE'}</span>
-          </div>
-        </td>
-        <td>
-          <button class="btn btn-outline btn-sm" onclick="app.deleteRoute('${r.routeId}')">Delete</button>
-        </td>`;
-      container.appendChild(row);
-    });
+      routes.forEach(r => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td><span class="badge badge-purple">${r.priority}</span></td>
+          <td><strong class="text-white">${r.name}</strong></td>
+          <td><code class="font-mono font-sm">${r.condition.matchType}:${r.condition.pattern}</code></td>
+          <td><span class="badge badge-indigo">${r.action}</span></td>
+          <td><code class="font-mono font-sm" style="word-break: break-all; max-width: 260px; display: inline-block;">${r.destination}</code></td>
+          <td><code class="font-mono font-sm">${r.fallback || '-'}</code></td>
+          <td>
+            <div class="status-dot-group">
+              <span class="status-dot ${r.active ? 'active' : 'inactive'}"></span>
+              <span>${r.active ? 'ACTIVE' : 'INACTIVE'}</span>
+            </div>
+          </td>
+          <td style="padding-right: 28px; text-align: right;">
+            <button class="btn btn-outline btn-sm" onclick="app.deleteRoute('${r.routeId}')">Delete</button>
+          </td>`;
+        container.appendChild(row);
+      });
   }
 
   // 6. ScentKey (Keys)
@@ -728,8 +728,10 @@ class BallomConsole {
         </td>
         <td>
           ${k.active ? `
-          <button class="btn btn-sm btn-rose" onclick="app.rotateScentKey('${k.keyId}')">Rotate</button>
-          <button class="btn btn-sm btn-outline text-red" onclick="app.revokeScentKey('${k.keyId}')">Revoke</button>
+          <div class="d-flex align-items-center justify-content-end gap-2">
+            <button class="btn btn-sm btn-rose" onclick="app.rotateScentKey('${k.keyId}')">Rotate</button>
+            <button class="btn btn-sm btn-outline text-red" onclick="app.revokeScentKey('${k.keyId}')">Revoke</button>
+          </div>
           ` : '<span class="text-dim">Revoked</span>'}
         </td>`;
       container.appendChild(row);
