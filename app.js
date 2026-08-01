@@ -180,6 +180,9 @@ class BallomConsole {
         })
       });
       await new Promise(r => setTimeout(r, 2000));
+      try {
+        await this.writeCdnFile('.nojekyll', '', 'BALLOM: Disable Jekyll build engine');
+      } catch { /* Suppress */ }
     }
 
     // Ensure GitHub Pages is activated on main branch
