@@ -781,6 +781,17 @@ input, select, textarea {
   transition: var(--transition);
 }
 
+select option {
+  background-color: #0d131f !important;
+  color: #f3f4f6 !important;
+  padding: 8px 12px;
+}
+
+select option:hover, select option:focus, select option:checked {
+  background-color: #182335 !important;
+  color: var(--primary) !important;
+}
+
 input:focus, select:focus, textarea:focus {
   border-color: var(--primary);
   box-shadow: 0 0 10px var(--primary-glow);

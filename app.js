@@ -78,6 +78,23 @@ class BallomConsole {
     document.getElementById(modalId).classList.remove('active');
   }
 
+  customConfirm(message, title = '⚠️ Confirm Action') {
+    return new Promise((resolve) => {
+      document.getElementById('confirm-title').innerText = title;
+      document.getElementById('confirm-message').innerText = message;
+      this.confirmResolver = resolve;
+      this.openModal('custom-confirm-modal');
+    });
+  }
+
+  closeConfirmModal(result) {
+    this.closeModal('custom-confirm-modal');
+    if (this.confirmResolver) {
+      this.confirmResolver(result);
+      this.confirmResolver = null;
+    }
+  }
+
   // ─── GITHUB API COMMUNICATOR ───────────────────────────────────────────────
 
   async githubRequest(endpoint, options = {}) {
@@ -363,6 +380,7 @@ class BallomConsole {
 
   switchTab(tabId) {
     this.currentTab = tabId;
+    this.resetRouteEvaluator();
 
     // Manage buttons
     document.querySelectorAll('.nav-item').forEach(btn => {
@@ -755,7 +773,7 @@ class BallomConsole {
   }
 
   async deletePhantom(phantomId) {
-    if (!confirm('Are you sure you want to permanently delete this phantom?')) return;
+    if (!(await this.customConfirm('Are you sure you want to permanently delete this phantom?', '🎭 Delete Phantom'))) return;
     const p = this.state.phantoms[phantomId];
     if (p && p.mode === 'iframe') {
       await this.deleteCdnFile(`phantoms/${phantomId}/index.html`, `Ballom: Delete iframe phantom ${phantomId}`);
@@ -899,7 +917,7 @@ class BallomConsole {
   }
 
   async unbindDomain(domainId) {
-    if (!confirm('Are you sure you want to unbind this domain?')) return;
+    if (!(await this.customConfirm('Are you sure you want to unbind this domain?', '🔗 Unbind Domain'))) return;
     const d = this.state.domains[domainId];
     delete this.state.domains[domainId];
     this.state.auditLog.push({
@@ -984,7 +1002,7 @@ class BallomConsole {
   }
 
   async deleteEndpoint(endpointId) {
-    if (!confirm('Are you sure you want to delete this endpoint?')) return;
+    if (!(await this.customConfirm('Are you sure you want to delete this endpoint?', '🔌 Delete Endpoint'))) return;
     const ep = this.state.endpoints[endpointId];
     if (ep && ep.mode === 'static') {
       await this.deleteCdnFile(`endpoints${ep.path}/index.json`, `Ballom: Delete static endpoint ${ep.path}`);
@@ -1053,7 +1071,7 @@ class BallomConsole {
   }
 
   async deleteAlias(slug) {
-    if (!confirm(`Are you sure you want to permanently delete /s/${slug}?`)) return;
+    if (!(await this.customConfirm(`Are you sure you want to permanently delete /s/${slug}?`, '🥚 Delete Alias'))) return;
     await this.deleteCdnFile(`s/${slug}/index.html`, `Ballom: Delete alias s/${slug}`);
     delete this.state.larvae[slug];
     this.state.auditLog.push({
@@ -1109,7 +1127,7 @@ class BallomConsole {
   }
 
   async deleteRoute(routeId) {
-    if (!confirm('Are you sure you want to delete this route?')) return;
+    if (!(await this.customConfirm('Are you sure you want to delete this route?', '🐛 Delete Route'))) return;
     const r = this.state.routes[routeId];
     delete this.state.routes[routeId];
     this.state.auditLog.push({
@@ -1122,7 +1140,6 @@ class BallomConsole {
     await this.saveState(`Delete routing rule ${r?.name}`);
     this.renderAll();
   }
-
   handleEvaluateRoute(e) {
     e.preventDefault();
     const path = document.getElementById('eval-path').value.trim();
@@ -1138,7 +1155,10 @@ class BallomConsole {
       let isMatch = false;
       const pattern = r.condition.pattern;
       if (r.condition.matchType === 'path') isMatch = path === pattern;
-      else if (r.condition.matchType === 'prefix') isMatch = path.startsWith(pattern);
+      else if (r.condition.matchType === 'prefix') {
+        const cleanPattern = pattern.replace(/\*$/, '');
+        isMatch = path.startsWith(cleanPattern);
+      }
       else if (r.condition.matchType === 'regex') {
         try { isMatch = new RegExp(pattern).test(path); } catch { isMatch = false; }
       }
@@ -1163,6 +1183,16 @@ class BallomConsole {
           <span style="color: var(--accent-rose); font-weight: 700;">✘ NO MATCH FOUND</span>
           <p class="font-sm mt-1">The path did not match any active routing rules.</p>
         </div>`;
+    }
+  }
+
+  resetRouteEvaluator() {
+    const evalPath = document.getElementById('eval-path');
+    const resultBox = document.getElementById('eval-result');
+    if (evalPath) evalPath.value = '';
+    if (resultBox) {
+      resultBox.innerHTML = '';
+      resultBox.classList.add('hidden');
     }
   }
 
@@ -1243,7 +1273,7 @@ class BallomConsole {
   }
 
   async revokeScentKey(keyId) {
-    if (!confirm('Are you sure you want to permanently revoke this API ScentKey?')) return;
+    if (!(await this.customConfirm('Are you sure you want to permanently revoke this API ScentKey?', '🔑 Revoke ScentKey'))) return;
     const k = this.state.scentKeys[keyId];
     if (k) {
       k.active = false;
@@ -1260,7 +1290,7 @@ class BallomConsole {
   }
 
   async rotateScentKey(keyId) {
-    if (!confirm('Are you sure you want to rotate this key? The current key will be immediately revoked.')) return;
+    if (!(await this.customConfirm('Are you sure you want to rotate this key? The current key will be immediately revoked.', '🔑 Rotate ScentKey'))) return;
     const k = this.state.scentKeys[keyId];
     if (!k) return;
 
