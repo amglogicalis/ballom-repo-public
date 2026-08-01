@@ -38,11 +38,7 @@
         </button>
         <button class="nav-item" data-tab="feromask">
           <span class="nav-icon">🎭</span> Feromask
-          <span class="badge badge-purple">Phantoms</span>
-        </button>
-        <button class="nav-item" data-tab="myrmilink">
-          <span class="nav-icon">🔗</span> MyrmiLink
-          <span class="badge badge-emerald">Domains</span>
+          <span class="badge badge-purple">Sheds & Shield</span>
         </button>
         <button class="nav-item" data-tab="chitingate">
           <span class="nav-icon">🔌</span> ChitinGate
@@ -143,48 +139,18 @@
                 <span class="stat-label">Feromask Phantoms</span>
               </div>
             </div>
-            <div class="stat-card">
-              <div class="stat-icon icon-emerald">🔗</div>
-              <div class="stat-info">
-                <span class="stat-value" id="stat-domains">0</span>
-                <span class="stat-label">MyrmiLink Domains</span>
-              </div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-icon icon-blue">🔌</div>
-              <div class="stat-info">
-                <span class="stat-value" id="stat-endpoints">0</span>
-                <span class="stat-label">ChitinGate Endpoints</span>
-              </div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-icon icon-amber">🥚</div>
-              <div class="stat-info">
-                <span class="stat-value" id="stat-larvae">0</span>
-                <span class="stat-label">Active Larvae Aliases</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Quick Actions & Overview -->
-          <div class="mt-6">
-            <div class="card">
-              <div class="card-header">
-                <h3>⚡ Quick Actions</h3>
-              </div>
-              <div class="card-body quick-actions-horizontal">
                 <button class="btn btn-action-card" onclick="app.switchTab('feromask')">
                   <span class="action-icon">🎭</span>
                   <div class="action-text">
-                    <h4>Create Phantom</h4>
-                    <p>Cloak any destination under a clean URL</p>
+                    <h4>Create Feromask</h4>
+                    <p>Cloak any URL under free TLDs</p>
                   </div>
                 </button>
-                <button class="btn btn-action-card" onclick="app.switchTab('myrmilink')">
-                  <span class="action-icon">🔗</span>
+                <button class="btn btn-action-card" onclick="app.switchTab('chitingate')">
+                  <span class="action-icon">🔌</span>
                   <div class="action-text">
-                    <h4>Bind Custom Domain</h4>
-                    <p>Point any domain to your projects</p>
+                    <h4>Create API Endpoint</h4>
+                    <p>Build static and dynamic endpoints</p>
                   </div>
                 </button>
                 <button class="btn btn-action-card" onclick="app.switchTab('scentkey')">
@@ -216,31 +182,6 @@
           </div>
           <div class="grid-responsive mt-4" id="phantoms-list">
             <!-- Dynamic Content -->
-          </div>
-        </div>
-
-        <!-- ────────────────────────────────────────── -->
-        <!-- TAB: MYRMILINK (DOMAINS) -->
-        <!-- ────────────────────────────────────────── -->
-        <div id="tab-myrmilink" class="tab-content hidden">
-          <div class="section-actions">
-            <button class="btn btn-emerald" onclick="app.openModal('bind-domain-modal')">➕ Bind Custom Domain</button>
-          </div>
-          <div class="table-container mt-4">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th>Domain</th>
-                  <th>Target Type</th>
-                  <th>CNAME Destination</th>
-                  <th>Status</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody id="domains-list">
-                <!-- Dynamic Content -->
-              </tbody>
-            </table>
           </div>
         </div>
 
@@ -434,86 +375,6 @@
           <button type="submit" class="btn btn-primary">Create Feromask Phantom</button>
         </div>
       </form>
-    </div>
-  </div>
-
-  <!-- ────────────────────────────────────────── -->
-  <!-- MODAL: BIND DOMAIN -->
-  <!-- ────────────────────────────────────────── -->
-  <div id="bind-domain-modal" class="modal">
-    <div class="modal-content card">
-      <div class="modal-header">
-        <h3>🔗 Bind Custom Domain (MyrmiLink)</h3>
-        <button class="close-btn" onclick="app.closeModal('bind-domain-modal')">&times;</button>
-      </div>
-      <form id="bind-domain-form" onsubmit="app.handleBindDomain(event)">
-        <div class="form-group">
-          <label for="domain-name">Custom Domain Name</label>
-          <input type="text" id="domain-name" placeholder="miapp.com" required>
-        </div>
-        <div class="form-group">
-          <label for="domain-type">Destination / Target Platform</label>
-          <select id="domain-type" onchange="app.toggleDomainFields()">
-            <option value="github-pages">GitHub Pages</option>
-            <option value="vercel">Vercel</option>
-            <option value="custom">Custom External URL</option>
-          </select>
-        </div>
-        <div class="form-group" id="group-domain-repo">
-          <label for="domain-repo">GitHub Pages Repository (owner/repo)</label>
-          <input type="text" id="domain-repo" placeholder="amglogicalis/mi-proyecto">
-        </div>
-        <div class="form-group hidden" id="group-domain-url">
-          <label for="domain-url">Destination URL</label>
-          <input type="url" id="domain-url" placeholder="https://api.miapp.com">
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-outline" onclick="app.closeModal('bind-domain-modal')">Cancel</button>
-          <button type="submit" class="btn btn-emerald">Bind Domain</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- ────────────────────────────────────────── -->
-  <!-- MODAL: DNS INSTRUCTIONS -->
-  <!-- ────────────────────────────────────────── -->
-  <div id="dns-modal" class="modal">
-    <div class="modal-content card max-w-lg">
-      <div class="modal-header">
-        <h3>📡 DNS Setup Instructions</h3>
-        <button class="close-btn" onclick="app.closeModal('dns-modal')">&times;</button>
-      </div>
-      <div class="card-body">
-        <p class="subtitle mb-4">Add the following DNS record at your domain registrar (e.g. Cloudflare, GoDaddy, Namecheap):</p>
-        
-        <div class="health-list bg-black-05 p-4 rounded mb-4">
-          <div class="health-item">
-            <span class="health-label">Record Type</span>
-            <span class="health-value text-purple font-mono">CNAME</span>
-          </div>
-          <div class="health-item">
-            <span class="health-label">Name (Host)</span>
-            <span class="health-value font-mono">www <span class="text-muted">(or @ for apex)</span></span>
-          </div>
-          <div class="health-item">
-            <span class="health-label">Value (Points to)</span>
-            <span class="health-value text-emerald font-mono" id="dns-cname-value">-</span>
-          </div>
-          <div class="health-item">
-            <span class="health-label">TTL</span>
-            <span class="health-value font-mono">3600 (1 hour)</span>
-          </div>
-        </div>
-
-        <h4>📢 Step-by-Step Guide:</h4>
-        <ul class="dns-guidelines font-sm" id="dns-instructions-notes">
-          <!-- Dynamic -->
-        </ul>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-primary" onclick="app.closeModal('dns-modal')">Done</button>
-      </div>
     </div>
   </div>
 

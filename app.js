@@ -457,11 +457,10 @@ class BallomConsole {
     // Update Titles
     const titles = {
       dashboard: { t: 'Dashboard', d: 'Overview of your phantom assets and gateway routes' },
-      feromask: { t: 'Feromask URL Cloaking', d: 'Manage iframe-cloaked or Morph-proxied URLs' },
-      myrmilink: { t: 'MyrmiLink Custom Domains', d: 'Bind external custom domains to Pages, Vercel, or custom backends' },
+      feromask: { t: 'Feromask URL Cloaking & Free TLDs', d: 'Manage Feromask Sheds free subdomains and BackSheds HA Shield' },
       chitingate: { t: 'ChitinGate API Gateway', d: 'Configure clean REST api paths mapped to static JSON, actions or Morphs' },
       larvae: { t: 'Larvae Short Links', d: 'Dynamic link shortener with custom aliases and real-time click tracking' },
-      pheropaths: { t: 'PheroPaths Routing Engine', d: 'Map priority-based redirection and proxy rules across endpoints' },
+      pheropaths: { t: 'PheroPaths Smart Traffic Router', d: 'Map priority-based redirection and proxy rules across endpoints' },
       scentkey: { t: 'ScentKey API Key Issuer', d: 'Manage cryptographically hashed credentials and permissions' },
       audit: { t: 'Audit Logs', d: 'Pristine security ledger tracking every state transformation' }
     };
@@ -478,8 +477,6 @@ class BallomConsole {
     // Dashboard Info
     const statPhantoms = document.getElementById('stat-phantoms');
     if (statPhantoms) statPhantoms.innerText = Object.keys(this.state.phantoms || {}).length;
-    const statDomains = document.getElementById('stat-domains');
-    if (statDomains) statDomains.innerText = Object.keys(this.state.domains || {}).length;
     const statEndpoints = document.getElementById('stat-endpoints');
     if (statEndpoints) statEndpoints.innerText = Object.keys(this.state.endpoints || {}).length;
     const statLarvae = document.getElementById('stat-larvae');
@@ -496,7 +493,6 @@ class BallomConsole {
 
     // Render Tab lists
     this.renderPhantoms();
-    this.renderDomains();
     this.renderEndpoints();
     this.renderAliases();
     this.renderRoutes();
@@ -572,41 +568,7 @@ class BallomConsole {
     });
   }
 
-  // 2. MyrmiLink (Domains)
-  renderDomains() {
-    const container = document.getElementById('domains-list');
-    container.innerHTML = '';
-    const domains = Object.values(this.state.domains || {});
-
-    if (domains.length === 0) {
-      container.innerHTML = `<tr><td colspan="5" class="text-center p-4">No custom domains bound.</td></tr>`;
-      return;
-    }
-
-    domains.forEach(d => {
-      const row = document.createElement('tr');
-      const vClass = d.verified ? 'status-dot active' : 'status-dot inactive';
-      const vText = d.verified ? 'Verified' : 'Pending CNAME Check';
-      row.innerHTML = `
-        <td><strong class="text-white">${d.domain}</strong></td>
-        <td><span class="badge badge-purple">${d.targetType}</span></td>
-        <td><code class="font-mono font-sm">${d.cnameValue}</code></td>
-        <td>
-          <div class="status-dot-group">
-            <span class="${vClass}"></span>
-            <span>${vText}</span>
-          </div>
-        </td>
-        <td>
-          <button class="btn btn-outline btn-sm" onclick="app.showDnsInstructions('${d.domainId}')">DNS Instructions</button>
-          <button class="btn btn-emerald btn-sm" onclick="app.verifyDomain('${d.domainId}')">Verify</button>
-          <button class="btn btn-outline btn-sm text-red" onclick="app.unbindDomain('${d.domainId}')">Unbind</button>
-        </td>`;
-      container.appendChild(row);
-    });
-  }
-
-  // 3. ChitinGate (Endpoints)
+  // 2. ChitinGate (Endpoints)
   renderEndpoints() {
     const container = document.getElementById('endpoints-list');
     container.innerHTML = '';
@@ -889,148 +851,6 @@ class BallomConsole {
       entityId: phantomId
     });
     await this.saveState(`Delete phantom ${phantomId}`);
-    this.renderAll();
-  }
-
-  // 🔗 MyrmiLink Domain Handlers
-  toggleDomainFields() {
-    const type = document.getElementById('domain-type').value;
-    const repoGroup = document.getElementById('group-domain-repo');
-    const urlGroup = document.getElementById('group-domain-url');
-
-    if (type === 'github-pages') {
-      repoGroup.classList.remove('hidden');
-      urlGroup.classList.add('hidden');
-    } else {
-      repoGroup.classList.add('hidden');
-      urlGroup.classList.remove('hidden');
-    }
-  }
-
-  async handleBindDomain(e) {
-    e.preventDefault();
-    const domain = document.getElementById('domain-name').value;
-    const type = document.getElementById('domain-type').value;
-    const repo = document.getElementById('domain-repo').value;
-    const url = document.getElementById('domain-url').value;
-
-    const domainId = `dom_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`;
-    const now = new Date().toISOString();
-
-    let cnameValue = '';
-    if (type === 'github-pages') {
-      if (!repo) { this.showToast('Repository is required for GitHub Pages.', 'error'); return; }
-      cnameValue = `${repo.split('/')[0]}.github.io`;
-    } else if (type === 'vercel') {
-      cnameValue = 'cname.vercel-dns.com';
-    } else {
-      if (!url) { this.showToast('Destination URL is required.', 'error'); return; }
-      try { cnameValue = new URL(url).hostname; } catch { cnameValue = url; }
-    }
-
-    const record = {
-      domainId,
-      domain,
-      targetRepo: repo || undefined,
-      targetUrl: url || undefined,
-      targetType: type,
-      cnameValue,
-      verified: false,
-      createdAt: now,
-      updatedAt: now
-    };
-
-    this.state.domains[domainId] = record;
-    this.state.auditLog.push({
-      timestamp: now,
-      action: 'myrmilink:bind',
-      entity: 'domain',
-      entityId: domainId,
-      metadata: { domain, targetType: type, cnameValue }
-    });
-
-    await this.saveState(`Bind domain ${domain}`);
-    this.closeModal('bind-domain-modal');
-    document.getElementById('bind-domain-form').reset();
-    this.renderAll();
-  }
-
-  showDnsInstructions(domainId) {
-    const d = this.state.domains[domainId];
-    if (!d) return;
-
-    document.getElementById('dns-cname-value').innerText = d.cnameValue;
-    const notesContainer = document.getElementById('dns-instructions-notes');
-    notesContainer.innerHTML = `
-      <li>Log in to your DNS provider (Cloudflare, Namecheap, GoDaddy, etc.).</li>
-      <li>Add a <strong>CNAME</strong> record pointing <code>${d.domain}</code> to <code>${d.cnameValue}</code>.</li>
-      <li>Propagation takes anywhere between 5 minutes to 24 hours.</li>
-    `;
-
-    if (d.targetType === 'github-pages') {
-      notesContainer.innerHTML += `
-        <li>Create a <strong>CNAME</strong> text file in your Pages repository (<code>${d.targetRepo}</code>) containing exactly <code>${d.domain}</code> to bind properly.</li>
-      `;
-    }
-
-    this.openModal('dns-modal');
-  }
-
-  async verifyDomain(domainId) {
-    const d = this.state.domains[domainId];
-    if (!d) return;
-
-    this.showLoading(true);
-    try {
-      const res = await fetch(`https://cloudflare-dns.com/dns-query?name=${d.domain}&type=CNAME`, {
-        headers: { Accept: 'application/dns-json' }
-      });
-      const data = await res.json();
-      const answer = data?.Answer?.[0];
-
-      if (answer && answer.data) {
-        const resolved = answer.data.replace(/\.$/, '');
-        const ok = resolved.includes(d.cnameValue.replace(/\.$/, ''));
-
-        if (ok) {
-          d.verified = true;
-          d.verifiedAt = new Date().toISOString();
-          d.updatedAt = d.verifiedAt;
-          this.state.auditLog.push({
-            timestamp: d.verifiedAt,
-            action: 'myrmilink:verified',
-            entity: 'domain',
-            entityId: domainId,
-            metadata: { resolvedTo: resolved }
-          });
-          await this.saveState(`Verify domain ${d.domain}`);
-          this.showToast(`DNS Verification Succeeded! ${d.domain} points to ${resolved}`, 'success');
-        } else {
-          this.showToast(`Verification pending. Currently resolves to: ${resolved} (Expected: ${d.cnameValue})`, 'info');
-        }
-      } else {
-        this.showToast(`No CNAME detected for ${d.domain}. DNS propagation may be pending.`, 'error');
-      }
-      this.renderAll();
-    } catch (e) {
-      this.showToast(`Failed resolving DNS: ${e.message}`, 'error');
-    } finally {
-      this.showLoading(false);
-    }
-  }
-
-  async unbindDomain(domainId) {
-    if (!(await this.customConfirm('Are you sure you want to unbind this domain?', '🔗 Unbind Domain'))) return;
-    const d = this.state.domains[domainId];
-    delete this.state.domains[domainId];
-    this.state.auditLog.push({
-      timestamp: new Date().toISOString(),
-      action: 'myrmilink:unbind',
-      entity: 'domain',
-      entityId: domainId,
-      metadata: { domain: d?.domain }
-    });
-    await this.saveState(`Unbind domain ${d?.domain}`);
     this.renderAll();
   }
 
