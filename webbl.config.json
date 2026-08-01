@@ -1,0 +1,8 @@
+{
+  "name": "ballom-console",
+  "repo": "amglogicalis/ballom-repo-public",
+  "buildCommand": "",
+  "outputDir": "./",
+  "branch": "main",
+  "framework": "Plain HTML"
+}

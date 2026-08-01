@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BALLOM Console — Phantom Proxy & API Gateway</title>
+  <!-- Modern Google Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- BACKGROUND GLOWS -->
+  <div class="bg-glow bg-glow-1"></div>
+  <div class="bg-glow bg-glow-2"></div>
+  <div class="bg-glow bg-glow-3"></div>
+
+  <div class="app-container">
+    
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-icon">🎭</div>
+        <div class="brand-text">
+          <h1>BALLOM</h1>
+          <span>PROXY & GATEWAY</span>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <button class="nav-item active" data-tab="dashboard">
+          <span class="nav-icon">📊</span> Dashboard
+        </button>
+        <button class="nav-item" data-tab="feromask">
+          <span class="nav-icon">🎭</span> Feromask
+          <span class="badge badge-purple">Phantoms</span>
+        </button>
+        <button class="nav-item" data-tab="myrmilink">
+          <span class="nav-icon">🔗</span> MyrmiLink
+          <span class="badge badge-emerald">Domains</span>
+        </button>
+        <button class="nav-item" data-tab="chitingate">
+          <span class="nav-icon">🔌</span> ChitinGate
+          <span class="badge badge-blue">Gateway</span>
+        </button>
+        <button class="nav-item" data-tab="larvae">
+          <span class="nav-icon">🥚</span> Larvae
+          <span class="badge badge-amber">Aliases</span>
+        </button>
+        <button class="nav-item" data-tab="pheropaths">
+          <span class="nav-icon">🐛</span> PheroPaths
+          <span class="badge badge-indigo">Routing</span>
+        </button>
+        <button class="nav-item" data-tab="scentkey">
+          <span class="nav-icon">🔑</span> ScentKey
+          <span class="badge badge-rose">API Keys</span>
+        </button>
+        <button class="nav-item" data-tab="audit">
+          <span class="nav-icon">📜</span> Audit Log
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="version">BALLOM Console v1.0.0</div>
+        <div class="credits">Powered by Terra Ecosystem</div>
+      </div>
+    </aside>
+
+    <!-- MAIN WORKSPACE -->
+    <main class="main-workspace">
+      
+      <!-- TOP BAR -->
+      <header class="topbar">
+        <div class="workspace-title">
+          <h2 id="current-tab-title">Dashboard</h2>
+          <p id="current-tab-desc" class="subtitle">Overview of your phantom assets and gateway routes</p>
+        </div>
+
+        <div class="topbar-actions">
+          <div class="repo-selector">
+            <span class="selector-label">Vault:</span>
+            <input type="text" id="storage-repo-input" value=".ballom-storage" placeholder="Storage repo">
+          </div>
+          <div class="token-input-group">
+            <input type="password" id="gh-token-input" placeholder="GitHub PAT (ghp_...)">
+            <button id="connect-btn" class="btn btn-primary">Connect</button>
+          </div>
+          <button id="refresh-btn" class="btn btn-icon" title="Refresh state" disabled>🔄</button>
+        </div>
+      </header>
+
+      <!-- CONTENT BODY -->
+      <div class="content-body">
+        
+        <!-- CONNECTION WALL (when disconnected) -->
+        <div id="connection-wall" class="card empty-state">
+          <div class="empty-icon">🔒</div>
+          <h3>Vault Connection Required</h3>
+          <p>Please enter your GitHub Personal Access Token and Vault Repository name above to unlock the BALLOM Console.</p>
+          <div class="info-box text-left">
+            <h4>💡 Why GitHub Token?</h4>
+            <p>BALLOM operates serverlessly with <strong>$0 infrastructure cost</strong>. All state, domains, phantoms, dynamic aliases, and endpoints are securely stored as a private JSON file in your own GitHub repository.</p>
+          </div>
+        </div>
+
+        <!-- LOADING STATE -->
+        <div id="loading-overlay" class="loading-overlay hidden">
+          <div class="spinner"></div>
+          <p>Communicating with GitHub Vault...</p>
+        </div>
+
+        <!-- ────────────────────────────────────────── -->
+        <!-- TAB: DASHBOARD -->
+        <!-- ────────────────────────────────────────── -->
+        <div id="tab-dashboard" class="tab-content active hidden">
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-icon icon-purple">🎭</div>
+              <div class="stat-info">
+                <span class="stat-value" id="stat-phantoms">0</span>
+                <span class="stat-label">Feromask Phantoms</span>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon icon-emerald">🔗</div>
+              <div class="stat-info">
+                <span class="stat-value" id="stat-domains">0</span>
+                <span class="stat-label">MyrmiLink Domains</span>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon icon-blue">🔌</div>
+              <div class="stat-info">
+                <span class="stat-value" id="stat-endpoints">0</span>
+                <span class="stat-label">ChitinGate Endpoints</span>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon icon-amber">🥚</div>
+              <div class="stat-info">
+                <span class="stat-value" id="stat-larvae">0</span>
+                <span class="stat-label">Active Larvae Aliases</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Actions & Overview -->
+          <div class="grid-2col mt-6">
+            <div class="card">
+              <div class="card-header">
+                <h3>⚡ Quick Actions</h3>
+              </div>
+              <div class="card-body quick-actions">
+                <button class="btn btn-action-card" onclick="app.switchTab('feromask')">
+                  <span class="action-icon">🎭</span>
+                  <div class="action-text">
+                    <h4>Create Phantom</h4>
+                    <p>Cloak any destination under a clean URL</p>
+                  </div>
+                </button>
+                <button class="btn btn-action-card" onclick="app.switchTab('myrmilink')">
+                  <span class="action-icon">🔗</span>
+                  <div class="action-text">
+                    <h4>Bind Custom Domain</h4>
+                    <p>Point any domain to your projects</p>
+                  </div>
+                </button>
+                <button class="btn btn-action-card" onclick="app.switchTab('scentkey')">
+                  <span class="action-icon">🔑</span>
+                  <div class="action-text">
+                    <h4>Issue API Key</h4>
+                    <p>Generate ScentKeys for secure invocation</p>
+                  </div>
+                </button>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <h3>📡 System Health & State</h3>
+              </div>
+              <div class="card-body">
+                <div class="health-list">
+                  <div class="health-item">
+                    <span class="health-label">Storage Repository</span>
+                    <span class="health-value text-purple" id="health-repo">-</span>
+                  </div>
+                  <div class="health-item">
+                    <span class="health-label">GitHub Pages CDN</span>
+                    <span class="health-value text-emerald" id="health-pages">Checking...</span>
+                  </div>
+                  <div class="health-item">
+                    <span class="health-label">State Version</span>
+                    <span class="health-value" id="health-version">-</span>
+                  </div>
+                  <div class="health-item">
+                    <span class="health-label">Total Audit Operations</span>
+                    <span class="health-value" id="health-audits">-</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ────────────────────────────────────────── -->
+        <!-- TAB: FEROMASK (PHANTOMS) -->
+        <!-- ────────────────────────────────────────── -->
+        <div id="tab-feromask" class="tab-content hidden">
+          <div class="section-actions">
+            <button class="btn btn-primary" onclick="app.openModal('create-phantom-modal')">➕ Create Phantom URL</button>
+          </div>
+          <div class="grid-responsive mt-4" id="phantoms-list">
+            <!-- Dynamic Content -->
+          </div>
+        </div>
+
+        <!-- ────────────────────────────────────────── -->
+        <!-- TAB: MYRMILINK (DOMAINS) -->
+        <!-- ────────────────────────────────────────── -->
+        <div id="tab-myrmilink" class="tab-content hidden">
+          <div class="section-actions">
+            <button class="btn btn-emerald" onclick="app.openModal('bind-domain-modal')">➕ Bind Custom Domain</button>
+          </div>
+          <div class="table-container mt-4">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Domain</th>
+                  <th>Target Type</th>
+                  <th>CNAME Destination</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="domains-list">
+                <!-- Dynamic Content -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ────────────────────────────────────────── -->
+        <!-- TAB: CHITINGATE (ENDPOINTS) -->
+        <!-- ────────────────────────────────────────── -->
+        <div id="tab-chitingate" class="tab-content hidden">
+          <div class="section-actions">
+            <button class="btn btn-blue" onclick="app.openModal('create-endpoint-modal')">➕ Create API Endpoint</button>
+          </div>
+          <div class="grid-responsive mt-4" id="endpoints-list">
+            <!-- Dynamic Content -->
+          </div>
+        </div>
+
+        <!-- ────────────────────────────────────────── -->
+        <!-- TAB: LARVAE (ALIASES) -->
+        <!-- ────────────────────────────────────────── -->
+        <div id="tab-larvae" class="tab-content hidden">
+          <div class="section-actions">
+            <button class="btn btn-amber" onclick="app.openModal('create-alias-modal')">➕ Create Short Link / Alias</button>
+          </div>
+          <div class="table-container mt-4">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Slug</th>
+                  <th>Clicks</th>
+                  <th>Destination</th>
+                  <th>Expiry</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="aliases-list">
+                <!-- Dynamic Content -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ────────────────────────────────────────── -->
+        <!-- TAB: PHEROPATHS (ROUTES) -->
+        <!-- ────────────────────────────────────────── -->
+        <div id="tab-pheropaths" class="tab-content hidden">
+          <div class="section-actions gap-2">
+            <button class="btn btn-indigo" onclick="app.openModal('create-route-modal')">➕ Add Routing Rule</button>
+            <button class="btn btn-outline" onclick="app.openModal('eval-route-modal')">🧪 Test Route Evaluation</button>
+          </div>
+          <div class="table-container mt-4">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Priority</th>
+                  <th>Name</th>
+                  <th>Condition</th>
+                  <th>Action</th>
+                  <th>Destination</th>
+                  <th>Fallback</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="routes-list">
+                <!-- Dynamic Content -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ────────────────────────────────────────── -->
+        <!-- TAB: SCENTKEY (KEYS) -->
+        <!-- ────────────────────────────────────────── -->
+        <div id="tab-scentkey" class="tab-content hidden">
+          <div class="section-actions">
+            <button class="btn btn-rose" onclick="app.openModal('create-key-modal')">➕ Issue ScentKey</button>
+          </div>
+          <div class="table-container mt-4">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Key ID</th>
+                  <th>Name</th>
+                  <th>Prefix</th>
+                  <th>Environment</th>
+                  <th>Scopes</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="keys-list">
+                <!-- Dynamic Content -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ────────────────────────────────────────── -->
+        <!-- TAB: AUDIT LOG -->
+        <!-- ────────────────────────────────────────── -->
+        <div id="tab-audit" class="tab-content hidden">
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Timestamp</th>
+                  <th>Action</th>
+                  <th>Entity</th>
+                  <th>Entity ID</th>
+                  <th>Details</th>
+                </tr>
+              </thead>
+              <tbody id="audit-list">
+                <!-- Dynamic Content -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </main>
+
+  </div>
+
+  <!-- ────────────────────────────────────────── -->
+  <!-- MODAL: CREATE PHANTOM -->
+  <!-- ────────────────────────────────────────── -->
+  <div id="create-phantom-modal" class="modal">
+    <div class="modal-content card">
+      <div class="modal-header">
+        <h3>🎭 Create Feromask Phantom URL</h3>
+        <button class="close-btn" onclick="app.closeModal('create-phantom-modal')">&times;</button>
+      </div>
+      <form id="create-phantom-form" onsubmit="app.handleCreatePhantom(event)">
+        <div class="form-group">
+          <label for="phantom-target">Real Target URL (The site to mask)</label>
+          <input type="url" id="phantom-target" placeholder="https://example.com/some/long/path" required>
+        </div>
+        <div class="form-group">
+          <label for="phantom-domain">Masked Custom Domain / Hostname</label>
+          <input type="text" id="phantom-domain" placeholder="miapp.com" required>
+        </div>
+        <div class="form-group">
+          <label for="phantom-mode">Masking Mode</label>
+          <select id="phantom-mode">
+            <option value="iframe">Iframe (GitHub Pages / Own Static Content — $0 server cost)</option>
+            <option value="morph">Morph (WEBBL Reverse Proxy — dynamic proxying)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="phantom-title">SEO Title (Optional)</label>
+          <input type="text" id="phantom-title" placeholder="My Premium Application">
+        </div>
+        <div class="form-group">
+          <label for="phantom-desc">SEO Description (Optional)</label>
+          <input type="text" id="phantom-desc" placeholder="A premium application hosted on Terra.">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" onclick="app.closeModal('create-phantom-modal')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Create Phantom</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ────────────────────────────────────────── -->
+  <!-- MODAL: BIND DOMAIN -->
+  <!-- ────────────────────────────────────────── -->
+  <div id="bind-domain-modal" class="modal">
+    <div class="modal-content card">
+      <div class="modal-header">
+        <h3>🔗 Bind Custom Domain (MyrmiLink)</h3>
+        <button class="close-btn" onclick="app.closeModal('bind-domain-modal')">&times;</button>
+      </div>
+      <form id="bind-domain-form" onsubmit="app.handleBindDomain(event)">
+        <div class="form-group">
+          <label for="domain-name">Custom Domain Name</label>
+          <input type="text" id="domain-name" placeholder="miapp.com" required>
+        </div>
+        <div class="form-group">
+          <label for="domain-type">Destination / Target Platform</label>
+          <select id="domain-type" onchange="app.toggleDomainFields()">
+            <option value="github-pages">GitHub Pages</option>
+            <option value="vercel">Vercel</option>
+            <option value="custom">Custom External URL</option>
+          </select>
+        </div>
+        <div class="form-group" id="group-domain-repo">
+          <label for="domain-repo">GitHub Pages Repository (owner/repo)</label>
+          <input type="text" id="domain-repo" placeholder="amglogicalis/mi-proyecto">
+        </div>
+        <div class="form-group hidden" id="group-domain-url">
+          <label for="domain-url">Destination URL</label>
+          <input type="url" id="domain-url" placeholder="https://api.miapp.com">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" onclick="app.closeModal('bind-domain-modal')">Cancel</button>
+          <button type="submit" class="btn btn-emerald">Bind Domain</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ────────────────────────────────────────── -->
+  <!-- MODAL: DNS INSTRUCTIONS -->
+  <!-- ────────────────────────────────────────── -->
+  <div id="dns-modal" class="modal">
+    <div class="modal-content card max-w-lg">
+      <div class="modal-header">
+        <h3>📡 DNS Setup Instructions</h3>
+        <button class="close-btn" onclick="app.closeModal('dns-modal')">&times;</button>
+      </div>
+      <div class="card-body">
+        <p class="subtitle mb-4">Add the following DNS record at your domain registrar (e.g. Cloudflare, GoDaddy, Namecheap):</p>
+        
+        <div class="health-list bg-black-05 p-4 rounded mb-4">
+          <div class="health-item">
+            <span class="health-label">Record Type</span>
+            <span class="health-value text-purple font-mono">CNAME</span>
+          </div>
+          <div class="health-item">
+            <span class="health-label">Name (Host)</span>
+            <span class="health-value font-mono">www <span class="text-muted">(or @ for apex)</span></span>
+          </div>
+          <div class="health-item">
+            <span class="health-label">Value (Points to)</span>
+            <span class="health-value text-emerald font-mono" id="dns-cname-value">-</span>
+          </div>
+          <div class="health-item">
+            <span class="health-label">TTL</span>
+            <span class="health-value font-mono">3600 (1 hour)</span>
+          </div>
+        </div>
+
+        <h4>📢 Step-by-Step Guide:</h4>
+        <ul class="dns-guidelines font-sm" id="dns-instructions-notes">
+          <!-- Dynamic -->
+        </ul>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" onclick="app.closeModal('dns-modal')">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ────────────────────────────────────────── -->
+  <!-- MODAL: CREATE API ENDPOINT -->
+  <!-- ────────────────────────────────────────── -->
+  <div id="create-endpoint-modal" class="modal">
+    <div class="modal-content card">
+      <div class="modal-header">
+        <h3>🔌 Create API Endpoint (ChitinGate)</h3>
+        <button class="close-btn" onclick="app.closeModal('create-endpoint-modal')">&times;</button>
+      </div>
+      <form id="create-endpoint-form" onsubmit="app.handleCreateEndpoint(event)">
+        <div class="form-group">
+          <label for="ep-path">Public Clean Path</label>
+          <input type="text" id="ep-path" placeholder="/api/v1/users" required>
+        </div>
+        <div class="form-group">
+          <label for="ep-mode">Endpoint Mode</label>
+          <select id="ep-mode" onchange="app.toggleEndpointFields()">
+            <option value="static">Static (JSON Data in .ballom-storage — $0 server cost)</option>
+            <option value="actions">Actions (Asynchronous logic via GitHub Actions)</option>
+            <option value="morph">Morph (Real-time gateway forward to WEBBL Morph)</option>
+          </select>
+        </div>
+        <div class="form-group" id="group-ep-static">
+          <label for="ep-data">Static JSON Data</label>
+          <textarea id="ep-data" class="font-mono" rows="6" placeholder='{ "status": "ok", "message": "hello" }'></textarea>
+        </div>
+        <div class="form-group hidden" id="group-ep-actions">
+          <label for="ep-workflow">GitHub Actions Workflow Name (Event Type)</label>
+          <input type="text" id="ep-workflow" placeholder="on-api-trigger">
+        </div>
+        <div class="form-group hidden" id="group-ep-morph">
+          <label for="ep-morph-url">WEBBL Morph Serverless Target URL</label>
+          <input type="url" id="ep-morph-url" placeholder="https://webbl-morph.vercel.app/api/handler">
+        </div>
+        <div class="form-group">
+          <label for="ep-desc">Description</label>
+          <input type="text" id="ep-desc" placeholder="Get users list">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" onclick="app.closeModal('create-endpoint-modal')">Cancel</button>
+          <button type="submit" class="btn btn-blue">Create Endpoint</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ────────────────────────────────────────── -->
+  <!-- MODAL: CREATE SHORT LINK (LARVAE) -->
+  <!-- ────────────────────────────────────────── -->
+  <div id="create-alias-modal" class="modal">
+    <div class="modal-content card">
+      <div class="modal-header">
+        <h3>🥚 Create Short Link / Alias</h3>
+        <button class="close-btn" onclick="app.closeModal('create-alias-modal')">&times;</button>
+      </div>
+      <form id="create-alias-form" onsubmit="app.handleCreateAlias(event)">
+        <div class="form-group">
+          <label for="alias-target">Target Destination URL</label>
+          <input type="url" id="alias-target" placeholder="https://docs.terra.dev/long-section-xyz" required>
+        </div>
+        <div class="form-group">
+          <label for="alias-slug">Custom Slug (Leave blank for random generation)</label>
+          <input type="text" id="alias-slug" placeholder="docs">
+        </div>
+        <div class="form-group">
+          <label for="alias-base">Base URL (For custom domain short-links)</label>
+          <input type="text" id="alias-base" placeholder="https://miapp.com">
+        </div>
+        <div class="form-group">
+          <label for="alias-expiry">Expiration Date (Optional)</label>
+          <input type="datetime-local" id="alias-expiry">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" onclick="app.closeModal('create-alias-modal')">Cancel</button>
+          <button type="submit" class="btn btn-amber">Create Link</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ────────────────────────────────────────── -->
+  <!-- MODAL: CREATE ROUTING RULE (PHEROPATHS) -->
+  <!-- ────────────────────────────────────────── -->
+  <div id="create-route-modal" class="modal">
+    <div class="modal-content card">
+      <div class="modal-header">
+        <h3>🐛 Add Routing Rule (PheroPaths)</h3>
+        <button class="close-btn" onclick="app.closeModal('create-route-modal')">&times;</button>
+      </div>
+      <form id="create-route-form" onsubmit="app.handleCreateRoute(event)">
+        <div class="form-group">
+          <label for="route-name">Route Name</label>
+          <input type="text" id="route-name" placeholder="API Forwarding" required>
+        </div>
+        <div class="form-group-row">
+          <div class="form-group">
+            <label for="route-match">Match Type</label>
+            <select id="route-match">
+              <option value="path">Exact Path (equals)</option>
+              <option value="prefix">Prefix (starts with)</option>
+              <option value="regex">Regular Expression</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="route-pattern">Pattern</label>
+            <input type="text" id="route-pattern" placeholder="/v1/*" required>
+          </div>
+        </div>
+        <div class="form-group-row">
+          <div class="form-group">
+            <label for="route-action">Action</label>
+            <select id="route-action">
+              <option value="proxy">Proxy (transparent forward)</option>
+              <option value="redirect">Redirect (301 status)</option>
+              <option value="rewrite">Rewrite (internal router)</option>
+              <option value="phantom">Phantom (cloak inside Feromask)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="route-dest">Destination URL / Phantom ID</label>
+            <input type="text" id="route-dest" placeholder="https://api.miapp.com" required>
+          </div>
+        </div>
+        <div class="form-group-row">
+          <div class="form-group">
+            <label for="route-priority">Priority (Lower = evaluated first)</label>
+            <input type="number" id="route-priority" value="10" placeholder="10">
+          </div>
+          <div class="form-group">
+            <label for="route-fallback">Fallback URL (Optional)</label>
+            <input type="text" id="route-fallback" placeholder="https://fallback.miapp.com">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" onclick="app.closeModal('create-route-modal')">Cancel</button>
+          <button type="submit" class="btn btn-indigo">Add Route</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ────────────────────────────────────────── -->
+  <!-- MODAL: TEST ROUTE EVALUATION -->
+  <!-- ────────────────────────────────────────── -->
+  <div id="eval-route-modal" class="modal">
+    <div class="modal-content card">
+      <div class="modal-header">
+        <h3>🧪 Test Route Evaluation</h3>
+        <button class="close-btn" onclick="app.closeModal('eval-route-modal')">&times;</button>
+      </div>
+      <form id="eval-route-form" onsubmit="app.handleEvaluateRoute(event)">
+        <div class="form-group">
+          <label for="eval-path">Test Path</label>
+          <input type="text" id="eval-path" placeholder="/api/v1/users" required>
+        </div>
+        <button type="submit" class="btn btn-indigo">Evaluate Match</button>
+        
+        <div id="eval-result" class="eval-result hidden mt-4">
+          <!-- Dynamic -->
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ────────────────────────────────────────── -->
+  <!-- MODAL: CREATE API KEY -->
+  <!-- ────────────────────────────────────────── -->
+  <div id="create-key-modal" class="modal">
+    <div class="modal-content card">
+      <div class="modal-header">
+        <h3>🔑 Issue ScentKey (API Key)</h3>
+        <button class="close-btn" onclick="app.closeModal('create-key-modal')">&times;</button>
+      </div>
+      <form id="create-key-form" onsubmit="app.handleCreateKey(event)">
+        <div class="form-group">
+          <label for="key-name">Key Name (Identifier)</label>
+          <input type="text" id="key-name" placeholder="Staging Service" required>
+        </div>
+        <div class="form-group">
+          <label for="key-env">Environment</label>
+          <select id="key-env">
+            <option value="live">Live (Production)</option>
+            <option value="test">Test (Sandbox)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Scopes (Permissions)</label>
+          <div class="checkbox-grid">
+            <label class="checkbox-label"><input type="checkbox" name="key-scopes" value="*"> Full Access (Wildcard)</label>
+            <label class="checkbox-label"><input type="checkbox" name="key-scopes" value="read"> Read State</label>
+            <label class="checkbox-label"><input type="checkbox" name="key-scopes" value="write"> Write State</label>
+            <label class="checkbox-label"><input type="checkbox" name="key-scopes" value="gateway:invoke"> Invoke Gateway</label>
+            <label class="checkbox-label"><input type="checkbox" name="key-scopes" value="larvae:create"> Create Short Links</label>
+            <label class="checkbox-label"><input type="checkbox" name="key-scopes" value="domain:manage"> Domain Management</label>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="key-expiry">Expiry Date (Optional)</label>
+          <input type="date" id="key-expiry">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" onclick="app.closeModal('create-key-modal')">Cancel</button>
+          <button type="submit" class="btn btn-rose">Issue ScentKey</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ────────────────────────────────────────── -->
+  <!-- MODAL: SHOW CREATED API KEY (SHOWS ONCE) -->
+  <!-- ────────────────────────────────────────── -->
+  <div id="show-key-modal" class="modal">
+    <div class="modal-content card max-w-lg">
+      <div class="modal-header">
+        <h3>🔑 ScentKey Issued Successfully!</h3>
+      </div>
+      <div class="card-body">
+        <div class="warning-alert mb-4">
+          ⚠️ <strong>WARNING:</strong> Save this key now! This is the only time it will ever be displayed. If you lose it, you must rotate or re-issue it.
+        </div>
+        <div class="form-group">
+          <label>Raw ScentKey</label>
+          <div class="key-display-box">
+            <span id="created-raw-key" class="font-mono">sck_live_...</span>
+            <button class="btn btn-sm btn-outline" onclick="app.copyCreatedKey()">Copy</button>
+          </div>
+        </div>
+        <div class="health-list font-sm bg-black-05 p-3 rounded">
+          <div class="health-item">
+            <span>Key ID:</span> <strong id="created-key-id">-</strong>
+          </div>
+          <div class="health-item">
+            <span>Key Name:</span> <strong id="created-key-name">-</strong>
+          </div>
+          <div class="health-item">
+            <span>Prefix:</span> <strong id="created-key-prefix">-</strong>
+          </div>
+          <div class="health-item">
+            <span>Scopes:</span> <strong id="created-key-scopes">-</strong>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-rose" onclick="app.closeModal('show-key-modal')">I Have Saved the Key</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATIONS CONTAINER -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- JS Implementation -->
+  <script src="app.js"></script>
+</body>
+</html>
