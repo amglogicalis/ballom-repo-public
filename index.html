@@ -80,15 +80,10 @@
         </div>
 
         <div class="topbar-actions">
-          <div class="hidden-config-elements" style="display: none !important;">
-            <div class="repo-selector">
-              <span class="selector-label">Vault:</span>
-              <input type="text" id="storage-repo-input" value=".ballom-storage" placeholder="Storage repo">
-            </div>
-            <div class="token-input-group">
-              <input type="password" id="gh-token-input" placeholder="GitHub PAT (ghp_...)">
-              <button id="connect-btn" class="btn btn-primary">Connect</button>
-            </div>
+          <div class="repo-selector-group d-flex gap-2">
+            <input type="password" id="gh-token-input" placeholder="GitHub PAT (ghp_...)" style="width: 180px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 8px; padding: 6px 10px; color: #fff; font-size: 11px;">
+            <input type="text" id="storage-repo-input" value=".ballom-storage" placeholder=".ballom-storage" style="width: 110px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 8px; padding: 6px 10px; color: #fff; font-size: 11px;">
+            <button id="connect-btn" class="btn btn-sm btn-primary">Connect</button>
           </div>
           <div class="vault-badges d-flex gap-2">
             <span class="badge badge-indigo" style="font-size: 10px; padding: 4px 8px;" title="Private Security Vault">🔒 .ballom-storage (Vault)</span>
@@ -102,11 +97,20 @@
       <div class="content-body">
         
         <!-- CONNECTION WALL (when disconnected) -->
-        <div id="connection-wall" class="card empty-state">
+        <div id="connection-wall" class="card empty-state" style="max-width: 550px; margin: 40px auto; padding: 32px;">
           <div class="empty-icon">🔒</div>
-          <h3>Vault Connection Required</h3>
-          <p>Please enter your GitHub Personal Access Token and Vault Repository name above to unlock the BALLOM Console.</p>
-          <div class="info-box text-left">
+          <h3 class="mb-2">Vault Connection Required</h3>
+          <p class="mb-4 text-muted font-sm">Please enter your GitHub Personal Access Token (PAT) below to unlock your BALLOM Console.</p>
+          
+          <div class="form-group text-left mb-4">
+            <label>GitHub Personal Access Token (PAT)</label>
+            <div class="d-flex gap-2 mt-1">
+              <input type="password" id="gh-token-input-wall" placeholder="ghp_..." style="flex: 1; background: #0d131f; color: #fff; padding: 10px 14px; border: 1px solid var(--border); border-radius: 10px;">
+              <button class="btn btn-primary" onclick="app.connectFromWall()">Connect Vault</button>
+            </div>
+          </div>
+
+          <div class="info-box text-left font-sm">
             <h4>💡 Why GitHub Token?</h4>
             <p>BALLOM operates serverlessly with <strong>$0 infrastructure cost</strong>. All state, domains, phantoms, dynamic aliases, and endpoints are securely stored as a private JSON file in your own GitHub repository.</p>
           </div>
