@@ -273,15 +273,15 @@ class BallomConsole {
     while (attempts < maxAttempts) {
       attempts++;
       try {
-        // Fetch current file SHA just in case of parallel conflicts
-        if (this.stateSha) {
-          try {
-            const currentFile = await this.githubRequest(
-              `/repos/${this.owner}/${this.repo}/contents/ballom.json?_t=${Date.now()}`
-            );
+        // Unconditionally fetch live file SHA from GitHub if file exists
+        try {
+          const currentFile = await this.githubRequest(
+            `/repos/${this.owner}/${this.repo}/contents/ballom.json?_t=${Date.now()}`
+          );
+          if (currentFile && currentFile.sha) {
             this.stateSha = currentFile.sha;
-          } catch { /* File gone? */ }
-        }
+          }
+        } catch { /* File does not exist yet */ }
 
         const base64Content = btoa(unescape(encodeURIComponent(JSON.stringify(this.state, null, 2))));
         
