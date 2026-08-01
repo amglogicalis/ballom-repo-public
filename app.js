@@ -116,8 +116,21 @@ class BallomConsole {
     return response.json();
   }
 
+  connectFromWall() {
+    const wallInput = document.getElementById('gh-token-input-wall');
+    if (wallInput && wallInput.value.trim()) {
+      document.getElementById('gh-token-input').value = wallInput.value.trim();
+    }
+    this.connectVault();
+  }
+
   async connectVault() {
-    const tokenInput = document.getElementById('gh-token-input').value.trim();
+    let tokenInput = document.getElementById('gh-token-input').value.trim();
+    const wallInput = document.getElementById('gh-token-input-wall');
+    if (!tokenInput && wallInput && wallInput.value.trim()) {
+      tokenInput = wallInput.value.trim();
+      document.getElementById('gh-token-input').value = tokenInput;
+    }
     const repoInput = document.getElementById('storage-repo-input').value.trim();
 
     if (!tokenInput) {
