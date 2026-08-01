@@ -154,9 +154,12 @@ class BallomConsole {
       
       // Unveil the app UI
       document.getElementById('connection-wall').classList.add('hidden');
+      this.switchTab(this.currentTab);
     } catch (e) {
       this.showToast(e.message, 'error');
-      localStorage.removeItem('ballom_github_token');
+      if (e.message.includes('401') || e.message.includes('Bad credentials')) {
+        localStorage.removeItem('ballom_github_token');
+      }
     } finally {
       this.showLoading(false);
     }
@@ -389,8 +392,9 @@ class BallomConsole {
     });
 
     // Manage content divs
+    const isConnected = document.getElementById('connection-wall').classList.contains('hidden');
     document.querySelectorAll('.tab-content').forEach(div => {
-      if (div.id === `tab-${tabId}`) div.classList.remove('hidden');
+      if (isConnected && div.id === `tab-${tabId}`) div.classList.remove('hidden');
       else div.classList.add('hidden');
     });
 
