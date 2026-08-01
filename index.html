@@ -8,6 +8,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="assets/logo_ballom.png">
   <!-- Stylesheet -->
   <link rel="stylesheet" href="style.css?v=2.0.1">
 </head>
@@ -100,8 +102,9 @@
           <div class="form-group text-left mb-4">
             <label>GitHub Personal Access Token (PAT)</label>
             <div class="d-flex gap-2 mt-1">
-              <input type="password" id="gh-token-input-wall" placeholder="ghp_..." style="flex: 1; background: #0d131f; color: #fff; padding: 10px 14px; border: 1px solid var(--border); border-radius: 10px;">
-              <button class="btn btn-primary" onclick="app.connectFromWall()">Connect Vault</button>
+              <input type="password" id="gh-token-input" placeholder="ghp_..." style="flex: 1; background: #0d131f; color: #fff; padding: 10px 14px; border: 1px solid var(--border); border-radius: 10px;">
+              <input type="hidden" id="storage-repo-input" value=".ballom-storage">
+              <button class="btn btn-primary" onclick="app.connectVault()">Connect Vault</button>
             </div>
           </div>
 
