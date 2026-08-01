@@ -448,15 +448,15 @@ body {
 /* STATS */
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
 }
 
 .stat-card {
   background: rgba(255, 255, 255, 0.02);
   border: 1px solid var(--border);
   border-radius: 18px;
-  padding: 20px;
+  padding: 18px 20px;
   display: flex;
   align-items: center;
   gap: 16px;
@@ -476,12 +476,15 @@ body {
   align-items: center;
   justify-content: center;
   font-size: 22px;
+  flex-shrink: 0;
 }
 
 .icon-purple  { background: rgba(168, 85, 247, 0.12); color: var(--primary); border: 1px solid rgba(168, 85, 247, 0.2); }
 .icon-emerald { background: rgba(16, 185, 129, 0.12); color: var(--accent-emerald); border: 1px solid rgba(16, 185, 129, 0.2); }
 .icon-blue    { background: rgba(59, 130, 246, 0.12); color: var(--accent-blue); border: 1px solid rgba(59, 130, 246, 0.2); }
 .icon-amber   { background: rgba(245, 158, 11, 0.12); color: var(--accent-amber); border: 1px solid rgba(245, 158, 11, 0.2); }
+.icon-indigo  { background: rgba(99, 102, 241, 0.12); color: var(--accent-indigo); border: 1px solid rgba(99, 102, 241, 0.2); }
+.icon-rose    { background: rgba(244, 63, 94, 0.12); color: var(--accent-rose); border: 1px solid rgba(244, 63, 94, 0.2); }
 
 .stat-info {
   display: flex;
@@ -527,6 +530,7 @@ body {
 .mt-4 { margin-top: 16px; }
 .mt-6 { margin-top: 24px; }
 .mb-4 { margin-bottom: 16px; }
+.mb-6 { margin-bottom: 24px; }
 .gap-2 { gap: 8px; }
 
 /* QUICK ACTIONS */
@@ -534,6 +538,12 @@ body {
   display: flex;
   flex-direction: column;
   gap: 12px;
+}
+
+.quick-actions-horizontal {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
 }
 
 .btn-action-card {
@@ -554,11 +564,12 @@ body {
   background: rgba(180, 213, 231, 0.05);
   border-color: rgba(180, 213, 231, 0.3);
   box-shadow: 0 0 15px rgba(180, 213, 231, 0.1);
-  transform: translateX(4px);
+  transform: translateY(-2px);
 }
 
 .action-icon {
   font-size: 24px;
+  flex-shrink: 0;
 }
 
 .action-text h4 {
@@ -611,7 +622,8 @@ body {
   background: rgba(255, 255, 255, 0.01);
   border: 1px solid var(--border);
   border-radius: 18px;
-  overflow: hidden;
+  overflow-x: auto;
+  padding-bottom: 2px;
 }
 
 .data-table {
@@ -619,6 +631,7 @@ body {
   border-collapse: collapse;
   text-align: left;
   font-size: 13px;
+  min-width: 820px;
 }
 
 .data-table th {
@@ -636,6 +649,12 @@ body {
   padding: 16px 20px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.03);
   vertical-align: middle;
+}
+
+.data-table th:last-child, .data-table td:last-child {
+  text-align: right;
+  padding-right: 28px;
+  white-space: nowrap;
 }
 
 .data-table tr:last-child td {
