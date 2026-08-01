@@ -152,9 +152,13 @@ class BallomConsole {
       await this.loadState();
 
       this.showToast(`Connected to Vault @${this.owner} (Dual-Repo Active)`, 'success');
-      document.getElementById('refresh-btn').disabled = false;
-      document.getElementById('connect-btn').innerText = 'Connected';
-      document.getElementById('connect-btn').className = 'btn btn-outline';
+      const refreshBtn = document.getElementById('refresh-btn');
+      if (refreshBtn) refreshBtn.disabled = false;
+      const connectBtn = document.getElementById('connect-btn');
+      if (connectBtn) {
+        connectBtn.innerText = 'Connected';
+        connectBtn.className = 'btn btn-outline';
+      }
       
       // Unveil the app UI
       document.getElementById('connection-wall').classList.add('hidden');
@@ -424,15 +428,23 @@ class BallomConsole {
     if (!this.state) return;
 
     // Dashboard Info
-    document.getElementById('stat-phantoms').innerText = Object.keys(this.state.phantoms || {}).length;
-    document.getElementById('stat-domains').innerText = Object.keys(this.state.domains || {}).length;
-    document.getElementById('stat-endpoints').innerText = Object.keys(this.state.endpoints || {}).length;
-    document.getElementById('stat-larvae').innerText = Object.values(this.state.larvae || {}).filter(l => l.active).length;
+    const statPhantoms = document.getElementById('stat-phantoms');
+    if (statPhantoms) statPhantoms.innerText = Object.keys(this.state.phantoms || {}).length;
+    const statDomains = document.getElementById('stat-domains');
+    if (statDomains) statDomains.innerText = Object.keys(this.state.domains || {}).length;
+    const statEndpoints = document.getElementById('stat-endpoints');
+    if (statEndpoints) statEndpoints.innerText = Object.keys(this.state.endpoints || {}).length;
+    const statLarvae = document.getElementById('stat-larvae');
+    if (statLarvae) statLarvae.innerText = Object.values(this.state.larvae || {}).filter(l => l.active).length;
 
-    document.getElementById('health-repo').innerText = `@${this.owner}/${this.repo}`;
-    document.getElementById('health-version').innerText = this.state.version || '1.0.0';
-    document.getElementById('health-audits').innerText = (this.state.auditLog || []).length;
-    document.getElementById('health-pages').innerText = `https://${this.owner}.github.io/${this.repo}/`;
+    const hRepo = document.getElementById('health-repo');
+    if (hRepo) hRepo.innerText = `@${this.owner}/${this.repo}`;
+    const hVer = document.getElementById('health-version');
+    if (hVer) hVer.innerText = this.state.version || '1.0.0';
+    const hAud = document.getElementById('health-audits');
+    if (hAud) hAud.innerText = (this.state.auditLog || []).length;
+    const hPag = document.getElementById('health-pages');
+    if (hPag) hPag.innerText = `https://${this.owner}.github.io/${this.repo}/`;
 
     // Render Tab lists
     this.renderPhantoms();
