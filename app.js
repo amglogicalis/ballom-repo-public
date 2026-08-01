@@ -8,6 +8,7 @@ class BallomConsole {
   constructor() {
     this.token = '';
     this.repo = '';
+    this.cdnRepo = 'ballom-cdn';
     this.owner = '';
     this.state = null;
     this.currentTab = 'dashboard';
@@ -22,6 +23,7 @@ class BallomConsole {
     const def = atob('Z2hwX1I3MmZ5MkM1d0ZranRGaUplVDN1aHlsMXBScGZnWjRQS1JoeA==');
     this.token = localStorage.getItem('ballom_github_token') || def;
     this.repo = localStorage.getItem('ballom_storage_repo') || '.ballom-storage';
+    this.cdnRepo = localStorage.getItem('ballom_cdn_repo') || 'ballom-cdn';
 
     // Set DOM initial values
     document.getElementById('gh-token-input').value = this.token;
@@ -119,14 +121,16 @@ class BallomConsole {
       // Save valid credentials to storage
       localStorage.setItem('ballom_github_token', this.token);
       localStorage.setItem('ballom_storage_repo', this.repo);
+      localStorage.setItem('ballom_cdn_repo', this.cdnRepo);
 
-      // Verify or create storage repository
+      // Verify or create storage repository (Private Vault) and CDN repository (Public Pages CDN)
       await this.ensureStorageRepo();
+      await this.ensureCdnRepo();
 
       // Load state
       await this.loadState();
 
-      this.showToast(`Connected to Vault for @${this.owner}`, 'success');
+      this.showToast(`Connected to Vault @${this.owner} (Dual-Repo Active)`, 'success');
       document.getElementById('refresh-btn').disabled = false;
       document.getElementById('connect-btn').innerText = 'Connected';
       document.getElementById('connect-btn').className = 'btn btn-outline';
@@ -146,7 +150,7 @@ class BallomConsole {
       await this.githubRequest(`/repos/${this.owner}/${this.repo}`);
     } catch (e) {
       // Repository doesn't exist, let's create it as private
-      this.showToast(`Creating private repo ${this.repo}...`, 'info');
+      this.showToast(`Creating private vault ${this.repo}...`, 'info');
       await this.githubRequest('/user/repos', {
         method: 'POST',
         body: JSON.stringify({
@@ -156,8 +160,42 @@ class BallomConsole {
           auto_init: true
         })
       });
-      // Small buffer for creation latency
       await new Promise(r => setTimeout(r, 2000));
+    }
+  }
+
+  async ensureCdnRepo() {
+    try {
+      await this.githubRequest(`/repos/${this.owner}/${this.cdnRepo}`);
+    } catch (e) {
+      // Repository doesn't exist, create it as PUBLIC so GitHub Pages serves content for free!
+      this.showToast(`Creating public CDN repo ${this.cdnRepo}...`, 'info');
+      await this.githubRequest('/user/repos', {
+        method: 'POST',
+        body: JSON.stringify({
+          name: this.cdnRepo,
+          private: false, // PUBLIC
+          description: 'BALLOM Public CDN Web Delivery (Endpoints, Aliases, Phantoms)',
+          auto_init: true
+        })
+      });
+      await new Promise(r => setTimeout(r, 2000));
+    }
+
+    // Ensure GitHub Pages is activated on main branch
+    try {
+      await this.githubRequest(`/repos/${this.owner}/${this.cdnRepo}/pages`);
+    } catch {
+      this.showToast(`Activating GitHub Pages on ${this.cdnRepo}...`, 'info');
+      try {
+        await this.githubRequest(`/repos/${this.owner}/${this.cdnRepo}/pages`, {
+          method: 'POST',
+          body: JSON.stringify({ source: { branch: 'main', path: '/' } })
+        });
+        await new Promise(r => setTimeout(r, 2000));
+      } catch (pagesErr) {
+        console.warn('GitHub Pages activation:', pagesErr.message);
+      }
     }
   }
 
@@ -275,6 +313,43 @@ class BallomConsole {
     finally { this.showLoading(false); }
   }
 
+  async writeCdnFile(path, content, message) {
+    this.showLoading(true);
+    try {
+      let sha;
+      try {
+        const file = await this.githubRequest(`/repos/${this.owner}/${this.cdnRepo}/contents/${path}`);
+        sha = file.sha;
+      } catch { /* File does not exist yet */ }
+
+      const base64Content = btoa(unescape(encodeURIComponent(content)));
+      const payload = { message, content: base64Content };
+      if (sha) payload.sha = sha;
+
+      await this.githubRequest(`/repos/${this.owner}/${this.cdnRepo}/contents/${path}`, {
+        method: 'PUT',
+        body: JSON.stringify(payload)
+      });
+    } catch (e) {
+      this.showToast(`Error writing CDN file: ${e.message}`, 'error');
+      throw e;
+    } finally {
+      this.showLoading(false);
+    }
+  }
+
+  async deleteCdnFile(path, message) {
+    this.showLoading(true);
+    try {
+      const file = await this.githubRequest(`/repos/${this.owner}/${this.cdnRepo}/contents/${path}`);
+      await this.githubRequest(`/repos/${this.owner}/${this.cdnRepo}/contents/${path}`, {
+        method: 'DELETE',
+        body: JSON.stringify({ message, sha: file.sha })
+      });
+    } catch { /* Suppress */ }
+    finally { this.showLoading(false); }
+  }
+
   showLoading(show) {
     const loader = document.getElementById('loading-overlay');
     if (show) loader.classList.remove('hidden');
@@ -359,7 +434,7 @@ class BallomConsole {
     phantoms.forEach(p => {
       const card = document.createElement('div');
       card.className = 'card phantom-card';
-      const cdnUrl = `https://${this.owner}.github.io/${this.repo}/phantoms/${p.phantomId}/`;
+      const cdnUrl = `https://${this.owner}.github.io/${this.cdnRepo}/phantoms/${p.phantomId}/`;
       card.innerHTML = `
         <div class="phantom-header">
           <div class="phantom-title-group">
@@ -444,7 +519,7 @@ class BallomConsole {
     endpoints.forEach(ep => {
       const card = document.createElement('div');
       card.className = 'card phantom-card';
-      const cdnUrl = ep.mode === 'static' ? `https://${this.owner}.github.io/${this.repo}/endpoints${ep.path}/index.json` : '';
+      const cdnUrl = ep.mode === 'static' ? `https://${this.owner}.github.io/${this.cdnRepo}/endpoints${ep.path}/index.json` : '';
       card.innerHTML = `
         <div class="phantom-header">
           <div class="phantom-title-group">
@@ -498,7 +573,7 @@ class BallomConsole {
 
     aliases.forEach(a => {
       const row = document.createElement('tr');
-      const shortUrl = a.baseUrl ? `${a.baseUrl}/s/${a.slug}` : `https://${this.owner}.github.io/${this.repo}/s/${a.slug}/`;
+      const shortUrl = a.baseUrl ? `${a.baseUrl}/s/${a.slug}` : `https://${this.owner}.github.io/${this.cdnRepo}/s/${a.slug}/`;
       const isExpired = a.expiresAt && new Date(a.expiresAt) < new Date();
       const statusClass = (a.active && !isExpired) ? 'status-dot active' : 'status-dot inactive';
       const statusText = isExpired ? 'Expired' : (a.active ? 'Active' : 'Inactive');
@@ -658,7 +733,7 @@ class BallomConsole {
   <noscript><p>Redirecting to <a href="${target}">${target}</a>…</p></noscript>
 </body>
 </html>`;
-      await this.writeVaultFile(`phantoms/${phantomId}/index.html`, html, `Ballom: Create iframe phantom ${phantomId}`);
+      await this.writeCdnFile(`phantoms/${phantomId}/index.html`, html, `Ballom: Create iframe phantom ${phantomId}`);
     }
 
     this.state.phantoms[phantomId] = phantom;
@@ -680,7 +755,7 @@ class BallomConsole {
     if (!confirm('Are you sure you want to permanently delete this phantom?')) return;
     const p = this.state.phantoms[phantomId];
     if (p && p.mode === 'iframe') {
-      await this.deleteVaultFile(`phantoms/${phantomId}/index.html`, `Ballom: Delete iframe phantom ${phantomId}`);
+      await this.deleteCdnFile(`phantoms/${phantomId}/index.html`, `Ballom: Delete iframe phantom ${phantomId}`);
     }
     delete this.state.phantoms[phantomId];
     this.state.auditLog.push({
@@ -887,7 +962,7 @@ class BallomConsole {
     };
 
     if (mode === 'static') {
-      await this.writeVaultFile(`endpoints${normalizedPath}/index.json`, JSON.stringify(staticData, null, 2), `Ballom: Create static endpoint ${normalizedPath}`);
+      await this.writeCdnFile(`endpoints${normalizedPath}/index.json`, JSON.stringify(staticData, null, 2), `Ballom: Create static endpoint ${normalizedPath}`);
     }
 
     this.state.endpoints[endpointId] = endpoint;
@@ -909,7 +984,7 @@ class BallomConsole {
     if (!confirm('Are you sure you want to delete this endpoint?')) return;
     const ep = this.state.endpoints[endpointId];
     if (ep && ep.mode === 'static') {
-      await this.deleteVaultFile(`endpoints${ep.path}/index.json`, `Ballom: Delete static endpoint ${ep.path}`);
+      await this.deleteCdnFile(`endpoints${ep.path}/index.json`, `Ballom: Delete static endpoint ${ep.path}`);
     }
     delete this.state.endpoints[endpointId];
     this.state.auditLog.push({
@@ -957,7 +1032,7 @@ class BallomConsole {
 </body>
 </html>`;
 
-    await this.writeVaultFile(`s/${slug}/index.html`, redirectHtml, `Ballom: Create short link s/${slug}`);
+    await this.writeCdnFile(`s/${slug}/index.html`, redirectHtml, `Ballom: Create short link s/${slug}`);
 
     this.state.larvae[slug] = alias;
     this.state.auditLog.push({
@@ -976,7 +1051,7 @@ class BallomConsole {
 
   async deleteAlias(slug) {
     if (!confirm(`Are you sure you want to permanently delete /s/${slug}?`)) return;
-    await this.deleteVaultFile(`s/${slug}/index.html`, `Ballom: Delete alias s/${slug}`);
+    await this.deleteCdnFile(`s/${slug}/index.html`, `Ballom: Delete alias s/${slug}`);
     delete this.state.larvae[slug];
     this.state.auditLog.push({
       timestamp: new Date().toISOString(),
