@@ -481,6 +481,10 @@ class BallomConsole {
     if (statEndpoints) statEndpoints.innerText = Object.keys(this.state.endpoints || {}).length;
     const statLarvae = document.getElementById('stat-larvae');
     if (statLarvae) statLarvae.innerText = Object.values(this.state.larvae || {}).filter(l => l.active).length;
+    const statRoutes = document.getElementById('stat-routes');
+    if (statRoutes) statRoutes.innerText = Object.keys(this.state.routes || {}).length;
+    const statScentKeys = document.getElementById('stat-scentkeys');
+    if (statScentKeys) statScentKeys.innerText = Object.values(this.state.scentKeys || {}).filter(k => k.active).length;
 
     const hRepo = document.getElementById('health-repo');
     if (hRepo) hRepo.innerText = `@${this.owner}/${this.repo}`;
