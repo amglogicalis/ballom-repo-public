@@ -25,9 +25,11 @@ class BallomConsole {
     this.repo = localStorage.getItem('ballom_storage_repo') || '.ballom-storage';
     this.cdnRepo = localStorage.getItem('ballom_cdn_repo') || 'ballom-cdn';
 
-    // Set DOM initial values
-    document.getElementById('gh-token-input').value = this.token;
-    document.getElementById('storage-repo-input').value = this.repo;
+    // Set DOM initial values safely
+    const tokenEl = document.getElementById('gh-token-input');
+    const repoEl = document.getElementById('storage-repo-input');
+    if (tokenEl) tokenEl.value = this.token;
+    if (repoEl) repoEl.value = this.repo;
 
     // Set up tab switching listeners
     document.querySelectorAll('.nav-item').forEach(btn => {
@@ -37,9 +39,9 @@ class BallomConsole {
       });
     });
 
-    // Set up connect button
-    document.getElementById('connect-btn').addEventListener('click', () => this.connectVault());
-    document.getElementById('refresh-btn').addEventListener('click', () => this.loadState());
+    // Set up refresh button
+    const refreshBtn = document.getElementById('refresh-btn');
+    if (refreshBtn) refreshBtn.addEventListener('click', () => this.loadState());
 
     // Connect automatically on load
     if (this.token) {
@@ -116,22 +118,11 @@ class BallomConsole {
     return response.json();
   }
 
-  connectFromWall() {
-    const wallInput = document.getElementById('gh-token-input-wall');
-    if (wallInput && wallInput.value.trim()) {
-      document.getElementById('gh-token-input').value = wallInput.value.trim();
-    }
-    this.connectVault();
-  }
-
   async connectVault() {
-    let tokenInput = document.getElementById('gh-token-input').value.trim();
-    const wallInput = document.getElementById('gh-token-input-wall');
-    if (!tokenInput && wallInput && wallInput.value.trim()) {
-      tokenInput = wallInput.value.trim();
-      document.getElementById('gh-token-input').value = tokenInput;
-    }
-    const repoInput = document.getElementById('storage-repo-input').value.trim();
+    const tokenEl = document.getElementById('gh-token-input');
+    const repoEl = document.getElementById('storage-repo-input');
+    const tokenInput = tokenEl ? tokenEl.value.trim() : '';
+    const repoInput = repoEl ? repoEl.value.trim() : '.ballom-storage';
 
     if (!tokenInput) {
       this.showToast('Please enter a GitHub Token.', 'error');
