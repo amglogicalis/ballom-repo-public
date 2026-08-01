@@ -5,19 +5,19 @@
 
 :root {
   /* Colors */
-  --bg-dark: #07040f;
-  --bg-card: rgba(20, 15, 38, 0.45);
-  --bg-card-hover: rgba(28, 20, 54, 0.6);
+  --bg-dark: #080c14;
+  --bg-card: rgba(14, 21, 33, 0.5);
+  --bg-card-hover: rgba(22, 32, 49, 0.65);
   --border: rgba(255, 255, 255, 0.08);
-  --border-focus: rgba(168, 85, 247, 0.4);
+  --border-focus: rgba(180, 213, 231, 0.4);
   
-  --primary: #a855f7;      /* Violet */
-  --primary-glow: rgba(168, 85, 247, 0.25);
-  --secondary: #ec4899;    /* Rose Pink */
+  --primary: #b4d5e7;      /* Ice Blue Logo Color */
+  --primary-glow: rgba(180, 213, 231, 0.25);
+  --secondary: #88b0cc;    /* Soft Slate Blue */
   
   --accent-emerald: #10b981;
-  --accent-blue: #3b82f6;
-  --accent-amber: #f59e0b;
+  --accent-blue: #b4d5e7;
+  --accent-amber: #eab308;
   --accent-indigo: #6366f1;
   --accent-rose: #f43f5e;
   
@@ -32,7 +32,7 @@
   /* Blurs & Shadows */
   --blur: 24px;
   --shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-  --shadow-glow: 0 0 20px 0 rgba(168, 85, 247, 0.15);
+  --shadow-glow: 0 0 20px 0 rgba(180, 213, 231, 0.15);
   
   /* Transitions */
   --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
@@ -60,7 +60,7 @@ body {
   border-radius: 50%;
   filter: blur(140px);
   z-index: -1;
-  opacity: 0.15;
+  opacity: 0.12;
   pointer-events: none;
 }
 
@@ -83,7 +83,7 @@ body {
 .bg-glow-3 {
   width: 350px;
   height: 350px;
-  background-color: var(--accent-indigo);
+  background-color: var(--primary);
   top: 40%;
   left: 50%;
   transform: translateX(-50%);
@@ -940,7 +940,7 @@ textarea {
 .spinner {
   width: 40px;
   height: 40px;
-  border: 3px solid rgba(168, 85, 247, 0.1);
+  border: 3px solid rgba(180, 213, 231, 0.1);
   border-top-color: var(--primary);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
@@ -948,6 +948,27 @@ textarea {
 
 @keyframes spin {
   to { transform: rotate(360deg); }
+}
+
+/* BRAND LOGO IMAGE styling */
+.brand-logo-img {
+  height: 38px;
+  width: auto;
+  border-radius: 8px;
+  filter: drop-shadow(0 0 10px rgba(180, 213, 231, 0.35));
+}
+
+/* HORIZONTAL QUICK ACTIONS GRID */
+.quick-actions-horizontal {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+@media (max-width: 900px) {
+  .quick-actions-horizontal {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* HELPERS */

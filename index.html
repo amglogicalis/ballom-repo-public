@@ -23,7 +23,7 @@
     <!-- SIDEBAR -->
     <aside class="sidebar">
       <div class="brand">
-        <div class="brand-icon">🎭</div>
+        <img src="assets/logo_ballom.png" alt="BALLOM" class="brand-logo-img">
         <div class="brand-text">
           <h1>BALLOM</h1>
           <span>PROXY & GATEWAY</span>
@@ -80,13 +80,15 @@
         </div>
 
         <div class="topbar-actions">
-          <div class="repo-selector">
-            <span class="selector-label">Vault:</span>
-            <input type="text" id="storage-repo-input" value=".ballom-storage" placeholder="Storage repo">
-          </div>
-          <div class="token-input-group">
-            <input type="password" id="gh-token-input" placeholder="GitHub PAT (ghp_...)">
-            <button id="connect-btn" class="btn btn-primary">Connect</button>
+          <div class="hidden-config-elements" style="display: none !important;">
+            <div class="repo-selector">
+              <span class="selector-label">Vault:</span>
+              <input type="text" id="storage-repo-input" value=".ballom-storage" placeholder="Storage repo">
+            </div>
+            <div class="token-input-group">
+              <input type="password" id="gh-token-input" placeholder="GitHub PAT (ghp_...)">
+              <button id="connect-btn" class="btn btn-primary">Connect</button>
+            </div>
           </div>
           <button id="refresh-btn" class="btn btn-icon" title="Refresh state" disabled>🔄</button>
         </div>
@@ -148,12 +150,12 @@
           </div>
 
           <!-- Quick Actions & Overview -->
-          <div class="grid-2col mt-6">
+          <div class="mt-6">
             <div class="card">
               <div class="card-header">
                 <h3>⚡ Quick Actions</h3>
               </div>
-              <div class="card-body quick-actions">
+              <div class="card-body quick-actions-horizontal">
                 <button class="btn btn-action-card" onclick="app.switchTab('feromask')">
                   <span class="action-icon">🎭</span>
                   <div class="action-text">
@@ -178,30 +180,12 @@
               </div>
             </div>
 
-            <div class="card">
-              <div class="card-header">
-                <h3>📡 System Health & State</h3>
-              </div>
-              <div class="card-body">
-                <div class="health-list">
-                  <div class="health-item">
-                    <span class="health-label">Storage Repository</span>
-                    <span class="health-value text-purple" id="health-repo">-</span>
-                  </div>
-                  <div class="health-item">
-                    <span class="health-label">GitHub Pages CDN</span>
-                    <span class="health-value text-emerald" id="health-pages">Checking...</span>
-                  </div>
-                  <div class="health-item">
-                    <span class="health-label">State Version</span>
-                    <span class="health-value" id="health-version">-</span>
-                  </div>
-                  <div class="health-item">
-                    <span class="health-label">Total Audit Operations</span>
-                    <span class="health-value" id="health-audits">-</span>
-                  </div>
-                </div>
-              </div>
+            <!-- Hidden health metadata required for JS logic -->
+            <div class="hidden-health-elements" style="display: none !important;">
+              <span id="health-repo">-</span>
+              <span id="health-pages">-</span>
+              <span id="health-version">-</span>
+              <span id="health-audits">-</span>
             </div>
           </div>
         </div>
