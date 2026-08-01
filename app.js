@@ -570,11 +570,6 @@ class BallomConsole {
         </div>`;
       container.appendChild(card);
     });
-            <button class="btn btn-outline btn-sm" onclick="app.deletePhantom('${p.phantomId}')">Delete</button>
-          </div>
-        </div>`;
-      container.appendChild(card);
-    });
   }
 
   // 2. MyrmiLink (Domains)
