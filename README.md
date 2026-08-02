@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/amglogicalis/Ballom"><img src="https://img.shields.io/badge/BALLOM-v1.0.0-6366f1.svg?style=for-the-badge&logo=github" alt="BALLOM Version" /></a>
+  <a href="https://www.npmjs.com/package/terra-ballom"><img src="https://img.shields.io/badge/npm-terra--ballom-6366f1.svg?style=for-the-badge&logo=npm" alt="NPM Package" /></a>
   <a href="https://amglogicalis.github.io/ballom-repo-public/"><img src="https://img.shields.io/badge/Web%20Console-ONLINE-10b981.svg?style=for-the-badge&logo=githubpages" alt="Live Console" /></a>
   <a href="https://github.com/amglogicalis/Ballom"><img src="https://img.shields.io/badge/Server%20Cost-%240%20Forever-f59e0b.svg?style=for-the-badge" alt="Zero Server Cost" /></a>
   <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge" alt="License" /></a>
@@ -78,16 +78,30 @@ Build production-ready API Endpoints across 3 serverless operational modes:
 
 ---
 
-## 📦 Global Installation
+## 📦 Installation & Setup
 
-You can install BALLOM globally via `npm` or run commands directly with `npx`:
+### Option 1: Global NPM Installation (Recommended)
+
+Install `terra-ballom` globally to access the `ballom` CLI command anywhere on your system:
 
 ```bash
-# Install globally
+# Install package globally via npm
 npm install -g terra-ballom
 
-# Verify installation
+# Verify CLI installation
 ballom --version
+```
+
+### Option 2: Instant NPX Usage (Zero Installation)
+
+Run BALLOM CLI commands directly without global installation:
+
+```bash
+# Launch live web console
+npx terra-ballom console
+
+# Run CLI commands directly
+npx terra-ballom feromask list
 ```
 
 ---
@@ -192,7 +206,13 @@ ballom key rotate --id skid_xyz123
 
 ## 🛠️ Node.js / TypeScript SDK Usage
 
-You can import `Ballom` directly in your Node.js backend or serverless applications:
+You can install `terra-ballom` in your Node.js or TypeScript backend project:
+
+```bash
+npm install terra-ballom
+```
+
+Import and use `Ballom` in your code:
 
 ```typescript
 import { Ballom } from 'terra-ballom';
@@ -230,18 +250,19 @@ console.log('Raw Key (save this!):', key.rawKey);
 
 ---
 
-## 🛠️ Local Development & Monorepo
+## 🚀 Publishing to NPM
+
+To publish a new version of the package to the global npm registry:
 
 ```bash
-# Clone the repository
-git clone https://github.com/amglogicalis/Ballom.git
-cd Ballom
-
-# Install dependencies
-npm install
-
-# Build SDK and CLI
+# Build the TypeScript SDK and CLI
 npm run build --workspace=packages/ballom-sdk
+
+# Navigate to package directory
+cd packages/ballom-sdk
+
+# Publish publicly to npm
+npm publish --access public
 ```
 
 ---
