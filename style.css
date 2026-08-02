@@ -380,6 +380,12 @@ body {
 
 .btn-rose:hover { opacity: 0.9; transform: translateY(-1px); }
 
+/* Force Black Text on Create Buttons for high contrast & readability */
+.btn-create-black {
+  color: #000000 !important;
+  font-weight: 700 !important;
+}
+
 .btn-outline {
   background: transparent;
   border-color: var(--border);
