@@ -446,10 +446,13 @@
           <div class="form-group">
             <label for="edit-phantom-tld-ext">Free TLD / Extension</label>
             <select id="edit-phantom-tld-ext" style="background: #0d131f; color: #f3f4f6; border: 1px solid var(--border);">
-              <option value=".is-a.dev">.is-a.dev (Developer TLD)</option>
-              <option value=".eu.org">.eu.org (Public Global)</option>
-              <option value=".sub.id">.sub.id (Universal)</option>
-              <option value=".github.io">.github.io (GitHub CDN)</option>
+              <option value=".is-a.dev">.is-a.dev (Developer Portfolio)</option>
+              <option value=".is-an.app">.is-an.app (Web App & Services)</option>
+              <option value=".1337.cx">.1337.cx (Geek & Aesthetic)</option>
+              <option value=".js.org">.js.org (JavaScript Ecosystem)</option>
+              <option value=".sub.id">.sub.id (Web3 & Identity)</option>
+              <option value=".eu.org">.eu.org (Classic Public)</option>
+              <option value=".github.io">.github.io (GitHub Pages Default)</option>
               <option value="custom">Custom Owned Domain (.com / .es)</option>
             </select>
           </div>
@@ -513,8 +516,15 @@
           <textarea id="ep-data" class="font-mono" rows="6" placeholder='{ "status": "ok", "message": "hello" }'></textarea>
         </div>
         <div class="form-group hidden" id="group-ep-actions">
-          <label for="ep-workflow">GitHub Actions Workflow Name (Event Type)</label>
-          <input type="text" id="ep-workflow" placeholder="on-api-trigger">
+          <div class="form-group mb-2">
+            <label for="ep-workflow">GitHub Actions Workflow Name (Event Type)</label>
+            <input type="text" id="ep-workflow" placeholder="on-api-trigger">
+          </div>
+          <div class="form-group mb-0">
+            <label for="ep-actions-payload">Workflow Inputs / Payload Schema JSON (Optional)</label>
+            <textarea id="ep-actions-payload" class="font-mono font-sm" rows="4" placeholder='{ "environment": "production", "notify_slack": true }'></textarea>
+            <p class="font-xs text-muted mt-1">Default parameters injected into client_payload when triggering GitHub Actions.</p>
+          </div>
         </div>
         <div class="form-group hidden" id="group-ep-morph">
           <label for="ep-morph-url">WEBBL Morph Serverless Target URL</label>
@@ -560,8 +570,14 @@
           <textarea id="edit-ep-data" class="font-mono" rows="6" placeholder='{ "status": "ok" }'></textarea>
         </div>
         <div class="form-group mb-3 hidden" id="edit-group-ep-actions">
-          <label for="edit-ep-workflow">GitHub Actions Workflow Name</label>
-          <input type="text" id="edit-ep-workflow" placeholder="on-api-trigger">
+          <div class="form-group mb-2">
+            <label for="edit-ep-workflow">GitHub Actions Workflow Name</label>
+            <input type="text" id="edit-ep-workflow" placeholder="on-api-trigger">
+          </div>
+          <div class="form-group mb-0">
+            <label for="edit-ep-actions-payload">Workflow Inputs / Payload Schema JSON (Optional)</label>
+            <textarea id="edit-ep-actions-payload" class="font-mono font-sm" rows="4" placeholder='{ "environment": "production" }'></textarea>
+          </div>
         </div>
         <div class="form-group mb-3 hidden" id="edit-group-ep-morph">
           <label for="edit-ep-morph-url">WEBBL Morph Target URL</label>
@@ -700,10 +716,10 @@
             <input type="text" id="route-pattern" placeholder="/v1/*" required>
           </div>
         </div>
-        <div class="form-group-row">
+        <div class="form-group-row mb-3">
           <div class="form-group">
             <label for="route-action">Action</label>
-            <select id="route-action">
+            <select id="route-action" onchange="app.toggleRouteActionFields()">
               <option value="proxy">Proxy (transparent forward)</option>
               <option value="redirect">Redirect (301 status)</option>
               <option value="rewrite">Rewrite (internal router)</option>
@@ -713,11 +729,16 @@
             </select>
           </div>
           <div class="form-group">
-            <label for="route-dest">Destination URL / Phantom ID</label>
+            <label for="route-dest">Destination URL / Webhook Endpoint</label>
             <input type="text" id="route-dest" placeholder="https://api.miapp.com" required>
           </div>
         </div>
-        <div class="form-group-row">
+        <div class="form-group mb-3 hidden" id="group-route-custom-action">
+          <label for="route-custom-payload">Custom Action Payload / Headers JSON</label>
+          <textarea id="route-custom-payload" class="font-mono font-sm" rows="3" placeholder='{ "X-Custom-Header": "Value", "Authorization": "Bearer token" }'></textarea>
+          <p class="font-xs text-muted mt-1">For Webhooks: custom HTTP payload schema. For Custom Headers: JSON key-value headers.</p>
+        </div>
+        <div class="form-group-row mb-3">
           <div class="form-group">
             <label for="route-priority">Priority (Lower = evaluated first)</label>
             <input type="number" id="route-priority" value="10" placeholder="10">
@@ -767,7 +788,7 @@
         <div class="form-group-row mb-3">
           <div class="form-group">
             <label for="edit-route-action">Action</label>
-            <select id="edit-route-action">
+            <select id="edit-route-action" onchange="app.toggleEditRouteActionFields()">
               <option value="proxy">Proxy</option>
               <option value="redirect">Redirect</option>
               <option value="rewrite">Rewrite</option>
@@ -780,6 +801,10 @@
             <label for="edit-route-dest">Destination URL</label>
             <input type="text" id="edit-route-dest" placeholder="https://destination.com" required>
           </div>
+        </div>
+        <div class="form-group mb-3 hidden" id="edit-group-route-custom-action">
+          <label for="edit-route-custom-payload">Custom Action Payload / Headers JSON</label>
+          <textarea id="edit-route-custom-payload" class="font-mono font-sm" rows="3" placeholder='{ "X-Custom-Header": "Value" }'></textarea>
         </div>
         <div class="form-group-row mb-3">
           <div class="form-group">

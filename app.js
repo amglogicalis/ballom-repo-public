@@ -902,6 +902,7 @@ class BallomConsole {
     const mode = document.getElementById('ep-mode').value;
     const staticDataStr = document.getElementById('ep-data').value;
     const workflow = document.getElementById('ep-workflow').value;
+    const actionsPayloadStr = (document.getElementById('ep-actions-payload')?.value || '').trim();
     const morphUrl = document.getElementById('ep-morph-url').value;
     const desc = document.getElementById('ep-desc').value;
 
@@ -911,6 +912,12 @@ class BallomConsole {
     if (mode === 'static') {
       try { staticData = JSON.parse(staticDataStr || '{}'); }
       catch { this.showToast('Static Data must be valid JSON.', 'error'); return; }
+    }
+
+    let actionsPayload;
+    if (mode === 'actions' && actionsPayloadStr) {
+      try { actionsPayload = JSON.parse(actionsPayloadStr); }
+      catch { this.showToast('Workflow Inputs must be valid JSON.', 'error'); return; }
     }
 
     const endpointId = `ep_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`;
@@ -923,6 +930,7 @@ class BallomConsole {
       mode,
       staticData,
       actionsWorkflow: workflow || undefined,
+      actionsPayload,
       morphUrl: morphUrl || undefined,
       requiredScopes: [],
       description: desc,
@@ -1037,6 +1045,18 @@ class BallomConsole {
     this.renderAll();
   }
 
+  toggleRouteActionFields() {
+    const action = document.getElementById('route-action').value;
+    const isCustom = action === 'webhook' || action === 'custom_headers';
+    document.getElementById('group-route-custom-action').classList.toggle('hidden', !isCustom);
+  }
+
+  toggleEditRouteActionFields() {
+    const action = document.getElementById('edit-route-action').value;
+    const isCustom = action === 'webhook' || action === 'custom_headers';
+    document.getElementById('edit-group-route-custom-action').classList.toggle('hidden', !isCustom);
+  }
+
   // 🐛 PheroPaths Router Handlers
   async handleCreateRoute(e) {
     e.preventDefault();
@@ -1047,6 +1067,20 @@ class BallomConsole {
     const dest = document.getElementById('route-dest').value;
     const priority = parseInt(document.getElementById('route-priority').value || '10');
     const fallback = document.getElementById('route-fallback').value;
+    const customPayloadStr = (document.getElementById('route-custom-payload')?.value || '').trim();
+
+    let customHeaders;
+    let webhookPayload;
+    if (customPayloadStr && (action === 'webhook' || action === 'custom_headers')) {
+      try {
+        const parsed = JSON.parse(customPayloadStr);
+        if (action === 'custom_headers') customHeaders = parsed;
+        else webhookPayload = parsed;
+      } catch {
+        this.showToast('Custom Payload / Headers must be valid JSON.', 'error');
+        return;
+      }
+    }
 
     const routeId = `rt_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`;
     const now = new Date().toISOString();
@@ -1059,6 +1093,8 @@ class BallomConsole {
       action,
       destination: dest,
       fallback: fallback || undefined,
+      customHeaders,
+      webhookPayload,
       active: true,
       createdAt: now,
       updatedAt: now
@@ -1437,6 +1473,8 @@ class BallomConsole {
     document.getElementById('edit-ep-mode').value = ep.mode || 'static';
     document.getElementById('edit-ep-data').value = ep.staticData ? JSON.stringify(ep.staticData, null, 2) : '';
     document.getElementById('edit-ep-workflow').value = ep.actionsWorkflow || '';
+    const payloadInput = document.getElementById('edit-ep-actions-payload');
+    if (payloadInput) payloadInput.value = ep.actionsPayload ? JSON.stringify(ep.actionsPayload, null, 2) : '';
     document.getElementById('edit-ep-morph-url').value = ep.morphUrl || '';
     document.getElementById('edit-ep-desc').value = ep.description || '';
     this.toggleEditEndpointFields();
@@ -1479,6 +1517,15 @@ class BallomConsole {
       }
     } else if (mode === 'actions') {
       ep.actionsWorkflow = document.getElementById('edit-ep-workflow').value.trim();
+      const payloadStr = (document.getElementById('edit-ep-actions-payload')?.value || '').trim();
+      if (payloadStr) {
+        try { ep.actionsPayload = JSON.parse(payloadStr); } catch {
+          this.showToast('Invalid JSON format in Workflow Inputs.', 'error');
+          return;
+        }
+      } else {
+        ep.actionsPayload = undefined;
+      }
     } else if (mode === 'morph') {
       ep.morphUrl = document.getElementById('edit-ep-morph-url').value.trim();
     }
@@ -1575,6 +1622,14 @@ class BallomConsole {
     document.getElementById('edit-route-dest').value = r.destination || '';
     document.getElementById('edit-route-priority').value = r.priority || 10;
     document.getElementById('edit-route-fallback').value = r.fallback || '';
+
+    const payloadInput = document.getElementById('edit-route-custom-payload');
+    if (payloadInput) {
+      const payloadData = r.action === 'custom_headers' ? r.customHeaders : r.webhookPayload;
+      payloadInput.value = payloadData ? JSON.stringify(payloadData, null, 2) : '';
+    }
+
+    this.toggleEditRouteActionFields();
     this.openModal('edit-route-modal');
   }
 
@@ -1584,15 +1639,33 @@ class BallomConsole {
     const r = this.state.routes[routeId];
     if (!r) return;
 
+    const action = document.getElementById('edit-route-action').value;
+    const customPayloadStr = (document.getElementById('edit-route-custom-payload')?.value || '').trim();
+
+    let customHeaders;
+    let webhookPayload;
+    if (customPayloadStr && (action === 'webhook' || action === 'custom_headers')) {
+      try {
+        const parsed = JSON.parse(customPayloadStr);
+        if (action === 'custom_headers') customHeaders = parsed;
+        else webhookPayload = parsed;
+      } catch {
+        this.showToast('Custom Payload / Headers must be valid JSON.', 'error');
+        return;
+      }
+    }
+
     r.name = document.getElementById('edit-route-name').value.trim();
     r.condition = {
       matchType: document.getElementById('edit-route-match').value,
       pattern: document.getElementById('edit-route-pattern').value.trim()
     };
-    r.action = document.getElementById('edit-route-action').value;
+    r.action = action;
     r.destination = document.getElementById('edit-route-dest').value.trim();
     r.priority = parseInt(document.getElementById('edit-route-priority').value, 10) || 10;
     r.fallback = document.getElementById('edit-route-fallback').value.trim() || undefined;
+    r.customHeaders = customHeaders;
+    r.webhookPayload = webhookPayload;
     r.updatedAt = new Date().toISOString();
 
     this.state.auditLog.push({
