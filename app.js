@@ -534,9 +534,9 @@ class BallomConsole {
             <h4 class="text-white font-md mb-1">${p.title || p.appName || 'Untitled Feromask'}</h4>
             <div class="phantom-domain text-indigo font-mono font-bold" style="font-size: 13px;">${p.maskedDomain}</div>
           </div>
-          <div class="d-flex gap-1 flex-column align-items-end">
+          <div class="d-flex gap-1 align-items-center flex-wrap justify-content-end" style="max-width: 200px;">
             <span class="badge badge-purple" style="font-size: 10px;">${tldBadge}</span>
-            <span class="badge badge-emerald" style="font-size: 9px;" title="BackSheds HA Shield Active">🛡️ BackSheds HA</span>
+            <span class="badge badge-emerald" style="font-size: 9px; white-space: nowrap;" title="BackSheds HA Shield Active">🛡️ BackSheds HA</span>
           </div>
         </div>
         <div class="phantom-details">
@@ -563,9 +563,9 @@ class BallomConsole {
             <span class="status-dot ${p.active ? 'active' : 'inactive'}"></span>
             <span>${p.active ? 'LIVE' : 'INACTIVE'}</span>
           </div>
-          <div class="gap-2 d-flex">
+          <div class="gap-2 d-flex align-items-center">
             <a href="${cdnUrl}" target="_blank" class="btn btn-sm btn-outline">Visit</a>
-            <button class="btn btn-sm btn-outline" onclick="app.openEditPhantomModal('${p.phantomId}')">✏️ Edit</button>
+            <button class="btn btn-sm btn-outline px-2" onclick="app.openEditPhantomModal('${p.phantomId}')" title="Edit Phantom">✏️</button>
             <button class="btn btn-sm btn-rose" onclick="app.deletePhantom('${p.phantomId}')">Delete</button>
           </div>
         </div>`;
@@ -627,8 +627,8 @@ class BallomConsole {
             <span class="status-dot ${ep.active ? 'active' : 'inactive'}"></span>
             <span>${ep.active ? 'ACTIVE' : 'INACTIVE'}</span>
           </div>
-          <div class="gap-2 d-flex">
-            <button class="btn btn-outline btn-sm" onclick="app.openEditEndpointModal('${ep.endpointId}')">✏️ Edit</button>
+          <div class="gap-2 d-flex align-items-center">
+            <button class="btn btn-outline btn-sm px-2" onclick="app.openEditEndpointModal('${ep.endpointId}')" title="Edit Endpoint">✏️</button>
             <button class="btn btn-outline btn-sm" onclick="app.deleteEndpoint('${ep.endpointId}')">Delete</button>
           </div>
         </div>`;
@@ -666,8 +666,8 @@ class BallomConsole {
           </div>
         </td>
         <td>
-          <div class="d-flex align-items-center justify-content-end gap-2">
-            <button class="btn btn-outline btn-sm" onclick="app.openEditAliasModal('${a.slug}')">✏️ Edit</button>
+          <div class="d-flex align-items-center justify-content-end gap-1">
+            <button class="btn btn-outline btn-sm px-2" onclick="app.openEditAliasModal('${a.slug}')" title="Edit Alias">✏️</button>
             <button class="btn btn-outline btn-sm" onclick="app.deleteAlias('${a.slug}')">Delete</button>
           </div>
         </td>`;
@@ -702,8 +702,8 @@ class BallomConsole {
             </div>
           </td>
           <td style="padding-right: 28px; text-align: right;">
-            <div class="d-flex align-items-center justify-content-end gap-2">
-              <button class="btn btn-outline btn-sm" onclick="app.openEditRouteModal('${r.routeId}')">✏️ Edit</button>
+            <div class="d-flex align-items-center justify-content-end gap-1">
+              <button class="btn btn-outline btn-sm px-2" onclick="app.openEditRouteModal('${r.routeId}')" title="Edit Route">✏️</button>
               <button class="btn btn-outline btn-sm" onclick="app.deleteRoute('${r.routeId}')">Delete</button>
             </div>
           </td>`;
@@ -738,8 +738,8 @@ class BallomConsole {
         </td>
         <td>
           ${k.active ? `
-          <div class="d-flex align-items-center justify-content-end gap-2">
-            <button class="btn btn-sm btn-outline" onclick="app.openEditKeyModal('${k.keyId}')">✏️ Edit</button>
+          <div class="d-flex align-items-center justify-content-end gap-1">
+            <button class="btn btn-sm btn-outline px-2" onclick="app.openEditKeyModal('${k.keyId}')" title="Edit ScentKey">✏️</button>
             <button class="btn btn-sm btn-rose" onclick="app.rotateScentKey('${k.keyId}')">Rotate</button>
             <button class="btn btn-sm btn-outline text-red" onclick="app.revokeScentKey('${k.keyId}')">Revoke</button>
           </div>

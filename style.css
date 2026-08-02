@@ -641,7 +641,7 @@ body {
   border-collapse: collapse;
   text-align: left;
   font-size: 13px;
-  min-width: 820px;
+  min-width: 880px;
 }
 
 .data-table th {
@@ -665,6 +665,7 @@ body {
   text-align: right;
   padding-right: 28px;
   white-space: nowrap;
+  min-width: 200px;
 }
 
 .data-table tr:last-child td {
