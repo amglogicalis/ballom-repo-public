@@ -250,23 +250,6 @@ console.log('Raw Key (save this!):', key.rawKey);
 
 ---
 
-## 🚀 Publishing to NPM
-
-To publish a new version of the package to the global npm registry:
-
-```bash
-# Build the TypeScript SDK and CLI
-npm run build --workspace=packages/ballom-sdk
-
-# Navigate to package directory
-cd packages/ballom-sdk
-
-# Publish publicly to npm
-npm publish --access public
-```
-
----
-
 <p align="center">
   <b>Powered by Terra Ecosystem • $0 Monthly Hosting • MIT License</b>
 </p>
