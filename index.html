@@ -222,7 +222,7 @@
         <!-- ────────────────────────────────────────── -->
         <div id="tab-feromask" class="tab-content hidden">
           <div class="section-actions">
-            <button class="btn btn-primary" onclick="app.openModal('create-phantom-modal')">➕ Create Phantom URL</button>
+            <button class="btn btn-primary btn-create-black" onclick="app.openModal('create-phantom-modal')">Create ➕</button>
           </div>
           <div class="grid-responsive mt-4" id="phantoms-list">
             <!-- Dynamic Content -->
@@ -234,7 +234,7 @@
         <!-- ────────────────────────────────────────── -->
         <div id="tab-chitingate" class="tab-content hidden">
           <div class="section-actions">
-            <button class="btn btn-blue" onclick="app.openModal('create-endpoint-modal')">➕ Create API Endpoint</button>
+            <button class="btn btn-blue btn-create-black" onclick="app.openModal('create-endpoint-modal')">Create ➕</button>
           </div>
           <div class="grid-responsive mt-4" id="endpoints-list">
             <!-- Dynamic Content -->
@@ -246,7 +246,7 @@
         <!-- ────────────────────────────────────────── -->
         <div id="tab-larvae" class="tab-content hidden">
           <div class="section-actions">
-            <button class="btn btn-amber" onclick="app.openModal('create-alias-modal')">➕ Create Short Link / Alias</button>
+            <button class="btn btn-amber btn-create-black" onclick="app.openModal('create-alias-modal')">Create ➕</button>
           </div>
           <div class="table-container mt-4">
             <table class="data-table">
@@ -272,7 +272,7 @@
         <!-- ────────────────────────────────────────── -->
         <div id="tab-pheropaths" class="tab-content hidden">
           <div class="section-actions gap-2">
-            <button class="btn btn-indigo" onclick="app.openModal('create-route-modal')">➕ Add Routing Rule</button>
+            <button class="btn btn-indigo btn-create-black" onclick="app.openModal('create-route-modal')">Create ➕</button>
             <button class="btn btn-outline" onclick="app.openModal('eval-route-modal')">🧪 Test Route Evaluation</button>
           </div>
           <div class="table-container mt-4">
@@ -301,7 +301,7 @@
         <!-- ────────────────────────────────────────── -->
         <div id="tab-scentkey" class="tab-content hidden">
           <div class="section-actions">
-            <button class="btn btn-rose" onclick="app.openModal('create-key-modal')">➕ Issue ScentKey</button>
+            <button class="btn btn-rose btn-create-black" onclick="app.openModal('create-key-modal')">Create ➕</button>
           </div>
           <div class="table-container mt-4">
             <table class="data-table">
@@ -416,7 +416,70 @@
 
         <div class="modal-footer">
           <button type="button" class="btn btn-outline" onclick="app.closeModal('create-phantom-modal')">Cancel</button>
-          <button type="submit" class="btn btn-primary">Create Feromask Phantom</button>
+          <button type="submit" class="btn btn-primary btn-create-black">Create ➕</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ────────────────────────────────────────── -->
+  <!-- MODAL: EDIT FEROMASK PHANTOM -->
+  <!-- ────────────────────────────────────────── -->
+  <div id="edit-phantom-modal" class="modal">
+    <div class="modal-content card">
+      <div class="modal-header">
+        <h3>✏️ Edit Feromask Phantom</h3>
+        <button class="close-btn" onclick="app.closeModal('edit-phantom-modal')">&times;</button>
+      </div>
+      <form id="edit-phantom-form" onsubmit="app.handleUpdatePhantom(event)">
+        <input type="hidden" id="edit-phantom-id">
+        <div class="form-group mb-3">
+          <label for="edit-phantom-target">Target Application URL</label>
+          <input type="url" id="edit-phantom-target" placeholder="https://my-app.vercel.app" required>
+        </div>
+        <div class="form-group-row mb-3">
+          <div class="form-group">
+            <label for="edit-phantom-app-name">App Name / Subdomain</label>
+            <input type="text" id="edit-phantom-app-name" placeholder="mi-tienda" required>
+          </div>
+          <div class="form-group">
+            <label for="edit-phantom-tld-ext">Free TLD / Extension</label>
+            <select id="edit-phantom-tld-ext" style="background: #0d131f; color: #f3f4f6; border: 1px solid var(--border);">
+              <option value=".is-a.dev">.is-a.dev (Developer TLD)</option>
+              <option value=".eu.org">.eu.org (Public Global)</option>
+              <option value=".sub.id">.sub.id (Universal)</option>
+              <option value=".github.io">.github.io (GitHub CDN)</option>
+              <option value="custom">Custom Owned Domain (.com / .es)</option>
+            </select>
+          </div>
+        </div>
+        <div class="p-3 bg-black-05 rounded mb-4 border-left-emerald">
+          <h4 class="text-emerald font-md mb-2">🛡️ Feromask BackSheds — HA Auto-Failover Shield</h4>
+          <div class="form-group mb-2">
+            <label for="edit-phantom-backup-target">Backup Failover Target URL (Optional)</label>
+            <input type="url" id="edit-phantom-backup-target" placeholder="https://backup-cocoon.github.io">
+          </div>
+          <div class="form-group mb-0">
+            <label for="edit-phantom-idle-timeout">Idle Auto-Shutdown Timeout</label>
+            <select id="edit-phantom-idle-timeout" style="background: #0d131f; color: #f3f4f6; border: 1px solid var(--border);">
+              <option value="5">5 Minutes Idle Timeout</option>
+              <option value="15">15 Minutes Idle Timeout</option>
+              <option value="30">30 Minutes Idle Timeout</option>
+              <option value="60">60 Minutes Idle Timeout</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group mb-2">
+          <label for="edit-phantom-title">SEO Title Override</label>
+          <input type="text" id="edit-phantom-title" placeholder="My Application">
+        </div>
+        <div class="form-group mb-3">
+          <label for="edit-phantom-desc">SEO Description Override</label>
+          <input type="text" id="edit-phantom-desc" placeholder="Application hosted on Terra.">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" onclick="app.closeModal('edit-phantom-modal')">Cancel</button>
+          <button type="submit" class="btn btn-primary btn-create-black">Save Changes 💾</button>
         </div>
       </form>
     </div>
@@ -462,7 +525,54 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-outline" onclick="app.closeModal('create-endpoint-modal')">Cancel</button>
-          <button type="submit" class="btn btn-blue">Create Endpoint</button>
+          <button type="submit" class="btn btn-blue btn-create-black">Create ➕</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ────────────────────────────────────────── -->
+  <!-- MODAL: EDIT API ENDPOINT -->
+  <!-- ────────────────────────────────────────── -->
+  <div id="edit-endpoint-modal" class="modal">
+    <div class="modal-content card">
+      <div class="modal-header">
+        <h3>✏️ Edit API Endpoint (ChitinGate)</h3>
+        <button class="close-btn" onclick="app.closeModal('edit-endpoint-modal')">&times;</button>
+      </div>
+      <form id="edit-endpoint-form" onsubmit="app.handleUpdateEndpoint(event)">
+        <input type="hidden" id="edit-ep-id">
+        <div class="form-group mb-3">
+          <label for="edit-ep-path">Public Clean Path</label>
+          <input type="text" id="edit-ep-path" placeholder="/api/v1/users" required>
+        </div>
+        <div class="form-group mb-3">
+          <label for="edit-ep-mode">Endpoint Mode</label>
+          <select id="edit-ep-mode" onchange="app.toggleEditEndpointFields()">
+            <option value="static">Static (JSON Data in .ballom-storage)</option>
+            <option value="actions">Actions (Asynchronous via GitHub Actions)</option>
+            <option value="morph">Morph (Real-time WEBBL Morph)</option>
+          </select>
+        </div>
+        <div class="form-group mb-3" id="edit-group-ep-static">
+          <label for="edit-ep-data">Static JSON Data Payload</label>
+          <textarea id="edit-ep-data" class="font-mono" rows="6" placeholder='{ "status": "ok" }'></textarea>
+        </div>
+        <div class="form-group mb-3 hidden" id="edit-group-ep-actions">
+          <label for="edit-ep-workflow">GitHub Actions Workflow Name</label>
+          <input type="text" id="edit-ep-workflow" placeholder="on-api-trigger">
+        </div>
+        <div class="form-group mb-3 hidden" id="edit-group-ep-morph">
+          <label for="edit-ep-morph-url">WEBBL Morph Target URL</label>
+          <input type="url" id="edit-ep-morph-url" placeholder="https://webbl-morph.vercel.app/api/handler">
+        </div>
+        <div class="form-group mb-3">
+          <label for="edit-ep-desc">Description</label>
+          <input type="text" id="edit-ep-desc" placeholder="Endpoint description">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" onclick="app.closeModal('edit-endpoint-modal')">Cancel</button>
+          <button type="submit" class="btn btn-blue btn-create-black">Save Changes 💾</button>
         </div>
       </form>
     </div>
@@ -496,7 +606,42 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-outline" onclick="app.closeModal('create-alias-modal')">Cancel</button>
-          <button type="submit" class="btn btn-amber">Create Link</button>
+          <button type="submit" class="btn btn-amber btn-create-black">Create ➕</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ────────────────────────────────────────── -->
+  <!-- MODAL: EDIT SHORT LINK (LARVAE) -->
+  <!-- ────────────────────────────────────────── -->
+  <div id="edit-alias-modal" class="modal">
+    <div class="modal-content card">
+      <div class="modal-header">
+        <h3>✏️ Edit / Rename Short Link (Larvae)</h3>
+        <button class="close-btn" onclick="app.closeModal('edit-alias-modal')">&times;</button>
+      </div>
+      <form id="edit-alias-form" onsubmit="app.handleUpdateAlias(event)">
+        <input type="hidden" id="edit-alias-current-slug">
+        <div class="form-group mb-3">
+          <label for="edit-alias-slug">Slug Name (Renamable)</label>
+          <input type="text" id="edit-alias-slug" placeholder="my-custom-slug" required>
+        </div>
+        <div class="form-group mb-3">
+          <label for="edit-alias-target">Target Destination URL</label>
+          <input type="url" id="edit-alias-target" placeholder="https://destination.com" required>
+        </div>
+        <div class="form-group mb-3">
+          <label for="edit-alias-base">Base URL (Optional)</label>
+          <input type="text" id="edit-alias-base" placeholder="https://miapp.com">
+        </div>
+        <div class="form-group mb-3">
+          <label for="edit-alias-expiry">Expiration Date (Optional)</label>
+          <input type="datetime-local" id="edit-alias-expiry">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" onclick="app.closeModal('edit-alias-modal')">Cancel</button>
+          <button type="submit" class="btn btn-amber btn-create-black">Save Changes 💾</button>
         </div>
       </form>
     </div>
@@ -557,7 +702,69 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-outline" onclick="app.closeModal('create-route-modal')">Cancel</button>
-          <button type="submit" class="btn btn-indigo">Add Route</button>
+          <button type="submit" class="btn btn-indigo btn-create-black">Create ➕</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ────────────────────────────────────────── -->
+  <!-- MODAL: EDIT ROUTING RULE (PHEROPATHS) -->
+  <!-- ────────────────────────────────────────── -->
+  <div id="edit-route-modal" class="modal">
+    <div class="modal-content card">
+      <div class="modal-header">
+        <h3>✏️ Edit Routing Rule (PheroPaths)</h3>
+        <button class="close-btn" onclick="app.closeModal('edit-route-modal')">&times;</button>
+      </div>
+      <form id="edit-route-form" onsubmit="app.handleUpdateRoute(event)">
+        <input type="hidden" id="edit-route-id">
+        <div class="form-group mb-3">
+          <label for="edit-route-name">Route Name</label>
+          <input type="text" id="edit-route-name" placeholder="My Route" required>
+        </div>
+        <div class="form-group-row mb-3">
+          <div class="form-group">
+            <label for="edit-route-match">Match Type</label>
+            <select id="edit-route-match">
+              <option value="path">Exact Path</option>
+              <option value="prefix">Prefix</option>
+              <option value="regex">Regex</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="edit-route-pattern">Pattern</label>
+            <input type="text" id="edit-route-pattern" placeholder="/v1/*" required>
+          </div>
+        </div>
+        <div class="form-group-row mb-3">
+          <div class="form-group">
+            <label for="edit-route-action">Action</label>
+            <select id="edit-route-action">
+              <option value="proxy">Proxy</option>
+              <option value="redirect">Redirect</option>
+              <option value="rewrite">Rewrite</option>
+              <option value="phantom">Phantom</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="edit-route-dest">Destination URL</label>
+            <input type="text" id="edit-route-dest" placeholder="https://destination.com" required>
+          </div>
+        </div>
+        <div class="form-group-row mb-3">
+          <div class="form-group">
+            <label for="edit-route-priority">Priority</label>
+            <input type="number" id="edit-route-priority" value="10">
+          </div>
+          <div class="form-group">
+            <label for="edit-route-fallback">Fallback URL</label>
+            <input type="text" id="edit-route-fallback" placeholder="https://fallback.com">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" onclick="app.closeModal('edit-route-modal')">Cancel</button>
+          <button type="submit" class="btn btn-indigo btn-create-black">Save Changes 💾</button>
         </div>
       </form>
     </div>
@@ -624,10 +831,49 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-outline" onclick="app.closeModal('create-key-modal')">Cancel</button>
-          <button type="submit" class="btn btn-rose">Issue ScentKey</button>
+          <button type="submit" class="btn btn-rose btn-create-black">Create ➕</button>
         </div>
       </form>
     </div>
+  </div>
+
+  <!-- ────────────────────────────────────────── -->
+  <!-- MODAL: EDIT API KEY -->
+  <!-- ────────────────────────────────────────── -->
+  <div id="edit-key-modal" class="modal">
+    <div class="modal-content card">
+      <div class="modal-header">
+        <h3>✏️ Edit ScentKey Metadata</h3>
+        <button class="close-btn" onclick="app.closeModal('edit-key-modal')">&times;</button>
+      </div>
+      <form id="edit-key-form" onsubmit="app.handleUpdateKey(event)">
+        <input type="hidden" id="edit-key-id">
+        <div class="form-group mb-3">
+          <label for="edit-key-name">Key Name</label>
+          <input type="text" id="edit-key-name" placeholder="Production Key" required>
+        </div>
+        <div class="form-group mb-3">
+          <label>Scopes (Permissions)</label>
+          <div class="checkbox-grid">
+            <label class="checkbox-label"><input type="checkbox" name="edit-key-scopes" value="*"> Full Access (Wildcard)</label>
+            <label class="checkbox-label"><input type="checkbox" name="edit-key-scopes" value="read"> Read State</label>
+            <label class="checkbox-label"><input type="checkbox" name="edit-key-scopes" value="write"> Write State</label>
+            <label class="checkbox-label"><input type="checkbox" name="edit-key-scopes" value="gateway:invoke"> Invoke Gateway</label>
+            <label class="checkbox-label"><input type="checkbox" name="edit-key-scopes" value="larvae:create"> Create Short Links</label>
+            <label class="checkbox-label"><input type="checkbox" name="edit-key-scopes" value="domain:manage"> Domain Management</label>
+          </div>
+        </div>
+        <div class="form-group mb-3">
+          <label for="edit-key-expiry">Expiry Date (Optional)</label>
+          <input type="date" id="edit-key-expiry">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" onclick="app.closeModal('edit-key-modal')">Cancel</button>
+          <button type="submit" class="btn btn-rose btn-create-black">Save Changes 💾</button>
+        </div>
+      </form>
+    </div>
+  </div>
   </div>
 
   <!-- ────────────────────────────────────────── -->

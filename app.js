@@ -565,6 +565,7 @@ class BallomConsole {
           </div>
           <div class="gap-2 d-flex">
             <a href="${cdnUrl}" target="_blank" class="btn btn-sm btn-outline">Visit</a>
+            <button class="btn btn-sm btn-outline" onclick="app.openEditPhantomModal('${p.phantomId}')">✏️ Edit</button>
             <button class="btn btn-sm btn-rose" onclick="app.deletePhantom('${p.phantomId}')">Delete</button>
           </div>
         </div>`;
@@ -626,7 +627,10 @@ class BallomConsole {
             <span class="status-dot ${ep.active ? 'active' : 'inactive'}"></span>
             <span>${ep.active ? 'ACTIVE' : 'INACTIVE'}</span>
           </div>
-          <button class="btn btn-outline btn-sm" onclick="app.deleteEndpoint('${ep.endpointId}')">Delete</button>
+          <div class="gap-2 d-flex">
+            <button class="btn btn-outline btn-sm" onclick="app.openEditEndpointModal('${ep.endpointId}')">✏️ Edit</button>
+            <button class="btn btn-outline btn-sm" onclick="app.deleteEndpoint('${ep.endpointId}')">Delete</button>
+          </div>
         </div>`;
       container.appendChild(card);
     });
@@ -662,7 +666,10 @@ class BallomConsole {
           </div>
         </td>
         <td>
-          <button class="btn btn-outline btn-sm" onclick="app.deleteAlias('${a.slug}')">Delete</button>
+          <div class="d-flex align-items-center justify-content-end gap-2">
+            <button class="btn btn-outline btn-sm" onclick="app.openEditAliasModal('${a.slug}')">✏️ Edit</button>
+            <button class="btn btn-outline btn-sm" onclick="app.deleteAlias('${a.slug}')">Delete</button>
+          </div>
         </td>`;
       container.appendChild(row);
     });
@@ -695,7 +702,10 @@ class BallomConsole {
             </div>
           </td>
           <td style="padding-right: 28px; text-align: right;">
-            <button class="btn btn-outline btn-sm" onclick="app.deleteRoute('${r.routeId}')">Delete</button>
+            <div class="d-flex align-items-center justify-content-end gap-2">
+              <button class="btn btn-outline btn-sm" onclick="app.openEditRouteModal('${r.routeId}')">✏️ Edit</button>
+              <button class="btn btn-outline btn-sm" onclick="app.deleteRoute('${r.routeId}')">Delete</button>
+            </div>
           </td>`;
         container.appendChild(row);
       });
@@ -729,6 +739,7 @@ class BallomConsole {
         <td>
           ${k.active ? `
           <div class="d-flex align-items-center justify-content-end gap-2">
+            <button class="btn btn-sm btn-outline" onclick="app.openEditKeyModal('${k.keyId}')">✏️ Edit</button>
             <button class="btn btn-sm btn-rose" onclick="app.rotateScentKey('${k.keyId}')">Rotate</button>
             <button class="btn btn-sm btn-outline text-red" onclick="app.revokeScentKey('${k.keyId}')">Revoke</button>
           </div>
@@ -1273,6 +1284,300 @@ class BallomConsole {
     document.getElementById('created-key-scopes').innerText = k.scopes.join(', ');
 
     this.openModal('show-key-modal');
+    this.renderAll();
+  }
+
+  // ─── ✏️ EDIT / UPDATE HANDLERS (SPRINT 2) ────────────────────────────────────
+
+  // 1. Feromask Edit
+  openEditPhantomModal(phantomId) {
+    const p = this.state.phantoms[phantomId];
+    if (!p) return;
+    document.getElementById('edit-phantom-id').value = phantomId;
+    document.getElementById('edit-phantom-target').value = p.targetUrl || '';
+    document.getElementById('edit-phantom-app-name').value = p.appName || p.phantomId;
+    document.getElementById('edit-phantom-tld-ext').value = p.tldExt || '.is-a.dev';
+    document.getElementById('edit-phantom-backup-target').value = p.backSheds?.backupTargetUrl || '';
+    document.getElementById('edit-phantom-idle-timeout').value = p.backSheds?.idleTimeoutMinutes || 15;
+    document.getElementById('edit-phantom-title').value = p.title || '';
+    document.getElementById('edit-phantom-desc').value = p.description || '';
+    this.openModal('edit-phantom-modal');
+  }
+
+  async handleUpdatePhantom(event) {
+    event.preventDefault();
+    const phantomId = document.getElementById('edit-phantom-id').value;
+    const p = this.state.phantoms[phantomId];
+    if (!p) return;
+
+    const targetUrl = document.getElementById('edit-phantom-target').value.trim();
+    const appName = document.getElementById('edit-phantom-app-name').value.trim();
+    const tldExt = document.getElementById('edit-phantom-tld-ext').value;
+    const backupTargetUrl = document.getElementById('edit-phantom-backup-target').value.trim();
+    const idleTimeoutMinutes = parseInt(document.getElementById('edit-phantom-idle-timeout').value, 10);
+    const title = document.getElementById('edit-phantom-title').value.trim();
+    document.getElementById('edit-phantom-desc').value.trim();
+
+    const maskedDomain = tldExt === 'custom' ? appName : `${appName}${tldExt}`;
+
+    p.targetUrl = targetUrl;
+    p.appName = appName;
+    p.tldExt = tldExt;
+    p.maskedDomain = maskedDomain;
+    p.title = title || appName;
+    p.description = document.getElementById('edit-phantom-desc').value.trim();
+    p.backSheds = { backupTargetUrl, idleTimeoutMinutes };
+    p.updatedAt = new Date().toISOString();
+
+    // Republish iframe CDN page
+    if (p.mode === 'iframe' && this.state.configured) {
+      const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>${p.title}</title>
+  ${p.description ? `<meta name="description" content="${p.description}" />` : ''}
+  <style>* { margin: 0; padding: 0; box-sizing: border-box; } html, body { width: 100%; height: 100%; overflow: hidden; } iframe { position: fixed; top: 0; left: 0; width: 100%; height: 100%; border: none; }</style>
+</head>
+<body>
+  <iframe src="${p.targetUrl}" title="${p.title}" allowfullscreen></iframe>
+</body>
+</html>`;
+      await this.writeCdnFile(`phantoms/${phantomId}/index.html`, html, `Update Feromask phantom ${phantomId}`);
+    }
+
+    this.state.auditLog.push({
+      timestamp: new Date().toISOString(),
+      action: 'feromask:update',
+      entity: 'phantom',
+      entityId: phantomId,
+      metadata: { targetUrl, maskedDomain }
+    });
+
+    await this.saveState(`Updated Feromask Phantom ${phantomId}`);
+    this.closeModal('edit-phantom-modal');
+    this.showToast('Feromask Phantom updated successfully!', 'success');
+    this.renderAll();
+  }
+
+  // 2. ChitinGate Edit
+  openEditEndpointModal(endpointId) {
+    const ep = this.state.endpoints[endpointId];
+    if (!ep) return;
+    document.getElementById('edit-ep-id').value = endpointId;
+    document.getElementById('edit-ep-path').value = ep.path || '';
+    document.getElementById('edit-ep-mode').value = ep.mode || 'static';
+    document.getElementById('edit-ep-data').value = ep.staticData ? JSON.stringify(ep.staticData, null, 2) : '';
+    document.getElementById('edit-ep-workflow').value = ep.actionsWorkflow || '';
+    document.getElementById('edit-ep-morph-url').value = ep.morphUrl || '';
+    document.getElementById('edit-ep-desc').value = ep.description || '';
+    this.toggleEditEndpointFields();
+    this.openModal('edit-endpoint-modal');
+  }
+
+  toggleEditEndpointFields() {
+    const mode = document.getElementById('edit-ep-mode').value;
+    document.getElementById('edit-group-ep-static').classList.toggle('hidden', mode !== 'static');
+    document.getElementById('edit-group-ep-actions').classList.toggle('hidden', mode !== 'actions');
+    document.getElementById('edit-group-ep-morph').classList.toggle('hidden', mode !== 'morph');
+  }
+
+  async handleUpdateEndpoint(event) {
+    event.preventDefault();
+    const endpointId = document.getElementById('edit-ep-id').value;
+    const ep = this.state.endpoints[endpointId];
+    if (!ep) return;
+
+    const pathRaw = document.getElementById('edit-ep-path').value.trim();
+    const path = pathRaw.startsWith('/') ? pathRaw : `/${pathRaw}`;
+    const mode = document.getElementById('edit-ep-mode').value;
+    const description = document.getElementById('edit-ep-desc').value.trim();
+
+    ep.path = path;
+    ep.mode = mode;
+    ep.description = description;
+    ep.updatedAt = new Date().toISOString();
+
+    if (mode === 'static') {
+      const dataStr = document.getElementById('edit-ep-data').value.trim();
+      let parsed = {};
+      try { if (dataStr) parsed = JSON.parse(dataStr); } catch (e) {
+        this.showToast('Invalid JSON format in endpoint static data.', 'error');
+        return;
+      }
+      ep.staticData = parsed;
+      if (this.state.configured) {
+        await this.writeCdnFile(`endpoints${path}/index.json`, JSON.stringify(parsed, null, 2), `Update static endpoint ${path}`);
+      }
+    } else if (mode === 'actions') {
+      ep.actionsWorkflow = document.getElementById('edit-ep-workflow').value.trim();
+    } else if (mode === 'morph') {
+      ep.morphUrl = document.getElementById('edit-ep-morph-url').value.trim();
+    }
+
+    this.state.auditLog.push({
+      timestamp: new Date().toISOString(),
+      action: 'chitingate:update',
+      entity: 'endpoint',
+      entityId: endpointId,
+      metadata: { path, mode }
+    });
+
+    await this.saveState(`Updated API Endpoint ${path}`);
+    this.closeModal('edit-endpoint-modal');
+    this.showToast('API Endpoint updated successfully!', 'success');
+    this.renderAll();
+  }
+
+  // 3. Larvae Edit
+  openEditAliasModal(currentSlug) {
+    const a = this.state.larvae[currentSlug];
+    if (!a) return;
+    document.getElementById('edit-alias-current-slug').value = currentSlug;
+    document.getElementById('edit-alias-slug').value = a.slug || '';
+    document.getElementById('edit-alias-target').value = a.targetUrl || '';
+    document.getElementById('edit-alias-base').value = a.baseUrl || '';
+    document.getElementById('edit-alias-expiry').value = a.expiresAt ? new Date(a.expiresAt).toISOString().slice(0, 16) : '';
+    this.openModal('edit-alias-modal');
+  }
+
+  async handleUpdateAlias(event) {
+    event.preventDefault();
+    const currentSlug = document.getElementById('edit-alias-current-slug').value;
+    const a = this.state.larvae[currentSlug];
+    if (!a) return;
+
+    const newSlug = document.getElementById('edit-alias-slug').value.trim().toLowerCase().replace(/[^a-z0-9-_]/g, '');
+    const targetUrl = document.getElementById('edit-alias-target').value.trim();
+    const baseUrl = document.getElementById('edit-alias-base').value.trim();
+    const expiry = document.getElementById('edit-alias-expiry').value;
+
+    if (newSlug !== currentSlug && this.state.larvae[newSlug]) {
+      this.showToast(`Slug /s/${newSlug} is already in use.`, 'error');
+      return;
+    }
+
+    // Rename in state if slug changed
+    if (newSlug !== currentSlug) {
+      delete this.state.larvae[currentSlug];
+      a.slug = newSlug;
+      this.state.larvae[newSlug] = a;
+    }
+
+    a.targetUrl = targetUrl;
+    a.baseUrl = baseUrl || undefined;
+    a.expiresAt = expiry ? new Date(expiry).toISOString() : undefined;
+
+    // Republish redirect HTML
+    if (this.state.configured) {
+      const redirectHtml = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta http-equiv="refresh" content="0; url=${targetUrl}"><title>Redirecting…</title><script>window.location.replace("${targetUrl}");</script></head><body><p>Redirecting to <a href="${targetUrl}">${targetUrl}</a>…</p></body></html>`;
+      await this.writeCdnFile(`s/${newSlug}/index.html`, redirectHtml, `Update Larvae alias /s/${newSlug}`);
+    }
+
+    this.state.auditLog.push({
+      timestamp: new Date().toISOString(),
+      action: 'larvae:update',
+      entity: 'alias',
+      entityId: newSlug,
+      metadata: { targetUrl, slug: newSlug }
+    });
+
+    await this.saveState(`Updated Larvae Alias /s/${newSlug}`);
+    this.closeModal('edit-alias-modal');
+    this.showToast('Short Link updated successfully!', 'success');
+    this.renderAll();
+  }
+
+  // 4. PheroPaths Edit
+  openEditRouteModal(routeId) {
+    const r = this.state.routes[routeId];
+    if (!r) return;
+    document.getElementById('edit-route-id').value = routeId;
+    document.getElementById('edit-route-name').value = r.name || '';
+    document.getElementById('edit-route-match').value = r.condition?.matchType || 'path';
+    document.getElementById('edit-route-pattern').value = r.condition?.pattern || '';
+    document.getElementById('edit-route-action').value = r.action || 'proxy';
+    document.getElementById('edit-route-dest').value = r.destination || '';
+    document.getElementById('edit-route-priority').value = r.priority || 10;
+    document.getElementById('edit-route-fallback').value = r.fallback || '';
+    this.openModal('edit-route-modal');
+  }
+
+  async handleUpdateRoute(event) {
+    event.preventDefault();
+    const routeId = document.getElementById('edit-route-id').value;
+    const r = this.state.routes[routeId];
+    if (!r) return;
+
+    r.name = document.getElementById('edit-route-name').value.trim();
+    r.condition = {
+      matchType: document.getElementById('edit-route-match').value,
+      pattern: document.getElementById('edit-route-pattern').value.trim()
+    };
+    r.action = document.getElementById('edit-route-action').value;
+    r.destination = document.getElementById('edit-route-dest').value.trim();
+    r.priority = parseInt(document.getElementById('edit-route-priority').value, 10) || 10;
+    r.fallback = document.getElementById('edit-route-fallback').value.trim() || undefined;
+    r.updatedAt = new Date().toISOString();
+
+    this.state.auditLog.push({
+      timestamp: new Date().toISOString(),
+      action: 'pheropaths:update',
+      entity: 'route',
+      entityId: routeId,
+      metadata: { name: r.name, destination: r.destination }
+    });
+
+    await this.saveState(`Updated PheroPaths Route ${r.name}`);
+    this.closeModal('edit-route-modal');
+    this.showToast('Routing Rule updated successfully!', 'success');
+    this.renderAll();
+  }
+
+  // 5. ScentKeys Edit
+  openEditKeyModal(keyId) {
+    const k = this.state.scentKeys[keyId];
+    if (!k) return;
+    document.getElementById('edit-key-id').value = keyId;
+    document.getElementById('edit-key-name').value = k.name || '';
+    document.getElementById('edit-key-expiry').value = k.expiresAt ? k.expiresAt.slice(0, 10) : '';
+
+    const checkboxes = document.querySelectorAll('input[name="edit-key-scopes"]');
+    checkboxes.forEach(cb => {
+      cb.checked = (k.scopes || []).includes(cb.value);
+    });
+
+    this.openModal('edit-key-modal');
+  }
+
+  async handleUpdateKey(event) {
+    event.preventDefault();
+    const keyId = document.getElementById('edit-key-id').value;
+    const k = this.state.scentKeys[keyId];
+    if (!k) return;
+
+    const name = document.getElementById('edit-key-name').value.trim();
+    const expiry = document.getElementById('edit-key-expiry').value;
+
+    const checkboxes = document.querySelectorAll('input[name="edit-key-scopes"]:checked');
+    const checkedScopes = Array.from(checkboxes).map(cb => cb.value);
+
+    k.name = name;
+    k.scopes = checkedScopes.length > 0 ? checkedScopes : ['read'];
+    k.expiresAt = expiry ? new Date(expiry).toISOString() : undefined;
+
+    this.state.auditLog.push({
+      timestamp: new Date().toISOString(),
+      action: 'scentkey:update',
+      entity: 'scentkey',
+      entityId: keyId,
+      metadata: { name, scopes: k.scopes }
+    });
+
+    await this.saveState(`Updated ScentKey metadata ${name}`);
+    this.closeModal('edit-key-modal');
+    this.showToast('ScentKey metadata updated successfully!', 'success');
     this.renderAll();
   }
 }
