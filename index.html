@@ -300,8 +300,9 @@
         <!-- TAB: SCENTKEY (KEYS) -->
         <!-- ────────────────────────────────────────── -->
         <div id="tab-scentkey" class="tab-content hidden">
-          <div class="section-actions">
+          <div class="section-actions gap-2">
             <button class="btn btn-rose btn-create-black" onclick="app.openModal('create-key-modal')">Create ➕</button>
+            <button class="btn btn-outline" onclick="app.purgeRevokedKeys()">Purge Revoked 🗑️</button>
           </div>
           <div class="table-container mt-4">
             <table class="data-table">

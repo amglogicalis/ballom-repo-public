@@ -743,7 +743,12 @@ class BallomConsole {
             <button class="btn btn-sm btn-rose" onclick="app.rotateScentKey('${k.keyId}')">Rotate</button>
             <button class="btn btn-sm btn-outline text-red" onclick="app.revokeScentKey('${k.keyId}')">Revoke</button>
           </div>
-          ` : '<span class="text-dim">Revoked</span>'}
+          ` : `
+          <div class="d-flex align-items-center justify-content-end gap-2">
+            <span class="text-dim font-sm">Revoked</span>
+            <button class="btn btn-sm btn-outline text-red" onclick="app.deleteScentKey('${k.keyId}')" title="Delete Revoked Key">Delete 🗑️</button>
+          </div>
+          `}
         </td>`;
       container.appendChild(row);
     });
@@ -1210,6 +1215,52 @@ class BallomConsole {
   copyCreatedKey() {
     navigator.clipboard.writeText(this.cachedRawKey);
     this.showToast('Copied raw key to clipboard!', 'success');
+  }
+
+  async deleteScentKey(keyId) {
+    if (!(await this.customConfirm('Are you sure you want to permanently delete this revoked ScentKey record?', '🗑️ Delete ScentKey'))) return;
+    const k = this.state.scentKeys[keyId];
+    if (k) {
+      delete this.state.scentKeys[keyId];
+      this.state.auditLog.push({
+        timestamp: new Date().toISOString(),
+        action: 'scentkey:delete',
+        entity: 'scentkey',
+        entityId: keyId,
+        metadata: { name: k.name }
+      });
+      await this.saveState(`Deleted ScentKey ${k.name}`);
+      this.showToast('ScentKey deleted successfully!', 'success');
+      this.renderAll();
+    }
+  }
+
+  async purgeRevokedKeys() {
+    const revokedCount = Object.values(this.state.scentKeys || {}).filter(k => !k.active).length;
+    if (revokedCount === 0) {
+      this.showToast('No revoked ScentKeys to purge.', 'info');
+      return;
+    }
+
+    if (!(await this.customConfirm(`Are you sure you want to permanently purge all ${revokedCount} revoked ScentKey records?`, '🗑️ Purge Revoked ScentKeys'))) return;
+
+    for (const keyId in this.state.scentKeys) {
+      if (!this.state.scentKeys[keyId].active) {
+        delete this.state.scentKeys[keyId];
+      }
+    }
+
+    this.state.auditLog.push({
+      timestamp: new Date().toISOString(),
+      action: 'scentkey:purge_revoked',
+      entity: 'scentkey',
+      entityId: '*',
+      metadata: { purgedCount: revokedCount }
+    });
+
+    await this.saveState(`Purged ${revokedCount} revoked ScentKeys`);
+    this.showToast(`Purged ${revokedCount} revoked ScentKeys!`, 'success');
+    this.renderAll();
   }
 
   async revokeScentKey(keyId) {
