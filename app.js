@@ -744,8 +744,7 @@ class BallomConsole {
             <button class="btn btn-sm btn-outline text-red" onclick="app.revokeScentKey('${k.keyId}')">Revoke</button>
           </div>
           ` : `
-          <div class="d-flex align-items-center justify-content-end gap-2">
-            <span class="text-dim font-sm">Revoked</span>
+          <div class="d-flex align-items-center justify-content-end">
             <button class="btn btn-sm btn-outline text-red" onclick="app.deleteScentKey('${k.keyId}')" title="Delete Revoked Key">Delete 🗑️</button>
           </div>
           `}
