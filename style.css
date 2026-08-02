@@ -435,6 +435,10 @@ body {
   background: var(--bg-card-hover);
 }
 
+.card-header {
+  margin-bottom: 20px;
+}
+
 .card-header h3 {
   color: var(--primary);
   font-size: 16px;
