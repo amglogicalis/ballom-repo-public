@@ -589,19 +589,31 @@
         <button class="close-btn" onclick="app.closeModal('create-alias-modal')">&times;</button>
       </div>
       <form id="create-alias-form" onsubmit="app.handleCreateAlias(event)">
-        <div class="form-group">
+        <div class="form-group mb-3">
           <label for="alias-target">Target Destination URL</label>
           <input type="url" id="alias-target" placeholder="https://docs.terra.dev/long-section-xyz" required>
         </div>
-        <div class="form-group">
-          <label for="alias-slug">Custom Slug (Leave blank for random generation)</label>
-          <input type="text" id="alias-slug" placeholder="docs">
+        <div class="form-group-row mb-3">
+          <div class="form-group">
+            <label for="alias-prefix">URL Prefix / Route Mode</label>
+            <select id="alias-prefix" style="background: #0d131f; color: #f3f4f6; border: 1px solid var(--border);">
+              <option value="s" selected>/s/ (Short Link - /s/slug)</option>
+              <option value="a">/a/ (Alias - /a/slug)</option>
+              <option value="go">/go/ (Direct Go - /go/slug)</option>
+              <option value="link">/link/ (Resource Link - /link/slug)</option>
+              <option value="root">/ (Root Direct — /slug)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="alias-slug">Custom Slug</label>
+            <input type="text" id="alias-slug" placeholder="miproducto">
+          </div>
         </div>
-        <div class="form-group">
+        <div class="form-group mb-3">
           <label for="alias-base">Base URL (For custom domain short-links)</label>
           <input type="text" id="alias-base" placeholder="https://miapp.com">
         </div>
-        <div class="form-group">
+        <div class="form-group mb-3">
           <label for="alias-expiry">Expiration Date (Optional)</label>
           <input type="datetime-local" id="alias-expiry">
         </div>
@@ -624,9 +636,21 @@
       </div>
       <form id="edit-alias-form" onsubmit="app.handleUpdateAlias(event)">
         <input type="hidden" id="edit-alias-current-slug">
-        <div class="form-group mb-3">
-          <label for="edit-alias-slug">Slug Name (Renamable)</label>
-          <input type="text" id="edit-alias-slug" placeholder="my-custom-slug" required>
+        <div class="form-group-row mb-3">
+          <div class="form-group">
+            <label for="edit-alias-prefix">URL Prefix / Route Mode</label>
+            <select id="edit-alias-prefix" style="background: #0d131f; color: #f3f4f6; border: 1px solid var(--border);">
+              <option value="s">/s/ (Short Link)</option>
+              <option value="a">/a/ (Alias)</option>
+              <option value="go">/go/ (Direct Go)</option>
+              <option value="link">/link/ (Resource Link)</option>
+              <option value="root">/ (Root Direct — /slug)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="edit-alias-slug">Slug Name (Renamable)</label>
+            <input type="text" id="edit-alias-slug" placeholder="my-custom-slug" required>
+          </div>
         </div>
         <div class="form-group mb-3">
           <label for="edit-alias-target">Target Destination URL</label>
@@ -684,6 +708,8 @@
               <option value="redirect">Redirect (301 status)</option>
               <option value="rewrite">Rewrite (internal router)</option>
               <option value="phantom">Phantom (cloak inside Feromask)</option>
+              <option value="webhook">Webhook (Trigger HTTP Event)</option>
+              <option value="custom_headers">Custom Headers (Inject Headers)</option>
             </select>
           </div>
           <div class="form-group">
@@ -746,6 +772,8 @@
               <option value="redirect">Redirect</option>
               <option value="rewrite">Rewrite</option>
               <option value="phantom">Phantom</option>
+              <option value="webhook">Webhook</option>
+              <option value="custom_headers">Custom Headers</option>
             </select>
           </div>
           <div class="form-group">
@@ -804,19 +832,19 @@
         <button class="close-btn" onclick="app.closeModal('create-key-modal')">&times;</button>
       </div>
       <form id="create-key-form" onsubmit="app.handleCreateKey(event)">
-        <div class="form-group">
+        <div class="form-group mb-3">
           <label for="key-name">Key Name (Identifier)</label>
           <input type="text" id="key-name" placeholder="Staging Service" required>
         </div>
-        <div class="form-group">
+        <div class="form-group mb-3">
           <label for="key-env">Environment</label>
           <select id="key-env">
             <option value="live">Live (Production)</option>
             <option value="test">Test (Sandbox)</option>
           </select>
         </div>
-        <div class="form-group">
-          <label>Scopes (Permissions)</label>
+        <div class="form-group mb-3">
+          <label>Predefined Scopes (Permissions)</label>
           <div class="checkbox-grid">
             <label class="checkbox-label"><input type="checkbox" name="key-scopes" value="*"> Full Access (Wildcard)</label>
             <label class="checkbox-label"><input type="checkbox" name="key-scopes" value="read"> Read State</label>
@@ -826,7 +854,12 @@
             <label class="checkbox-label"><input type="checkbox" name="key-scopes" value="domain:manage"> Domain Management</label>
           </div>
         </div>
-        <div class="form-group">
+        <div class="form-group mb-3">
+          <label for="key-custom-scopes">Custom Scopes (Optional, comma-separated)</label>
+          <input type="text" id="key-custom-scopes" placeholder="billing:read, users:delete, analytics:view">
+          <p class="font-xs text-muted mt-1">Combine standard permissions with your own custom API scopes.</p>
+        </div>
+        <div class="form-group mb-3">
           <label for="key-expiry">Expiry Date (Optional)</label>
           <input type="date" id="key-expiry">
         </div>
@@ -854,7 +887,7 @@
           <input type="text" id="edit-key-name" placeholder="Production Key" required>
         </div>
         <div class="form-group mb-3">
-          <label>Scopes (Permissions)</label>
+          <label>Predefined Scopes (Permissions)</label>
           <div class="checkbox-grid">
             <label class="checkbox-label"><input type="checkbox" name="edit-key-scopes" value="*"> Full Access (Wildcard)</label>
             <label class="checkbox-label"><input type="checkbox" name="edit-key-scopes" value="read"> Read State</label>
@@ -863,6 +896,10 @@
             <label class="checkbox-label"><input type="checkbox" name="edit-key-scopes" value="larvae:create"> Create Short Links</label>
             <label class="checkbox-label"><input type="checkbox" name="edit-key-scopes" value="domain:manage"> Domain Management</label>
           </div>
+        </div>
+        <div class="form-group mb-3">
+          <label for="edit-key-custom-scopes">Custom Scopes (Optional, comma-separated)</label>
+          <input type="text" id="edit-key-custom-scopes" placeholder="billing:read, users:delete">
         </div>
         <div class="form-group mb-3">
           <label for="edit-key-expiry">Expiry Date (Optional)</label>
@@ -874,6 +911,7 @@
         </div>
       </form>
     </div>
+  </div>
   </div>
   </div>
 

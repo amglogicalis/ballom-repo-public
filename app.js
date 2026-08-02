@@ -649,13 +649,18 @@ class BallomConsole {
 
     aliases.forEach(a => {
       const row = document.createElement('tr');
-      const shortUrl = a.baseUrl ? `${a.baseUrl}/s/${a.slug}` : `https://${this.owner}.github.io/${this.cdnRepo}/s/${a.slug}/`;
+      const prefix = a.prefix !== undefined ? a.prefix : 's';
+      const cleanPrefix = (prefix === 'root' || prefix === '') ? '' : prefix;
+      const displayPath = cleanPrefix ? `/${cleanPrefix}/${a.slug}` : `/${a.slug}`;
+      const shortUrl = a.baseUrl
+        ? `${a.baseUrl.replace(/\/+$/, '')}${displayPath}`
+        : `https://${this.owner}.github.io/${this.cdnRepo}${displayPath}/`;
       const isExpired = a.expiresAt && new Date(a.expiresAt) < new Date();
       const statusClass = (a.active && !isExpired) ? 'status-dot active' : 'status-dot inactive';
       const statusText = isExpired ? 'Expired' : (a.active ? 'Active' : 'Inactive');
 
       row.innerHTML = `
-        <td><a href="${shortUrl}" target="_blank" class="text-white font-mono"><strong>/s/${a.slug}</strong></a></td>
+        <td><a href="${shortUrl}" target="_blank" class="text-white font-mono"><strong>${displayPath}</strong></a></td>
         <td><strong class="text-amber">${a.clicks}</strong> clicks</td>
         <td><code class="font-mono font-sm" style="word-break: break-all;">${a.targetUrl}</code></td>
         <td><span class="font-sm text-muted">${a.expiresAt ? new Date(a.expiresAt).toLocaleString() : 'Never'}</span></td>
@@ -967,15 +972,19 @@ class BallomConsole {
   async handleCreateAlias(e) {
     e.preventDefault();
     const target = document.getElementById('alias-target').value;
+    const prefix = document.getElementById('alias-prefix').value;
     const customSlug = document.getElementById('alias-slug').value.trim().toLowerCase().replace(/[^a-z0-9-_]/g, '');
     const base = document.getElementById('alias-base').value;
     const expiry = document.getElementById('alias-expiry').value;
 
     const slug = customSlug || Math.random().toString(36).slice(2, 8);
+    const cleanPrefix = (prefix === 'root' || prefix === '') ? '' : prefix;
+    const cdnPath = cleanPrefix ? `${cleanPrefix}/${slug}/index.html` : `${slug}/index.html`;
     const now = new Date().toISOString();
 
     const alias = {
       slug,
+      prefix: cleanPrefix,
       targetUrl: target,
       baseUrl: base || undefined,
       clicks: 0,
@@ -997,7 +1006,7 @@ class BallomConsole {
 </body>
 </html>`;
 
-    await this.writeCdnFile(`s/${slug}/index.html`, redirectHtml, `Ballom: Create short link s/${slug}`);
+    await this.writeCdnFile(cdnPath, redirectHtml, `Ballom: Create short link ${cdnPath}`);
 
     this.state.larvae[slug] = alias;
     this.state.auditLog.push({
@@ -1005,10 +1014,10 @@ class BallomConsole {
       action: 'larvae:create',
       entity: 'alias',
       entityId: slug,
-      metadata: { targetUrl: target, slug }
+      metadata: { targetUrl: target, slug, prefix: cleanPrefix }
     });
 
-    await this.saveState(`Create dynamic alias s/${slug}`);
+    await this.saveState(`Create dynamic alias ${cdnPath}`);
     this.closeModal('create-alias-modal');
     document.getElementById('create-alias-form').reset();
     this.renderAll();
@@ -1146,14 +1155,22 @@ class BallomConsole {
     const name = document.getElementById('key-name').value;
     const env = document.getElementById('key-env').value;
     const expiry = document.getElementById('key-expiry').value;
+    const customScopesStr = (document.getElementById('key-custom-scopes')?.value || '').trim();
 
     const checkedScopes = [];
     document.querySelectorAll('input[name="key-scopes"]:checked').forEach(cb => {
       checkedScopes.push(cb.value);
     });
 
+    if (customScopesStr) {
+      const customArr = customScopesStr.split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
+      customArr.forEach(s => {
+        if (!checkedScopes.includes(s)) checkedScopes.push(s);
+      });
+    }
+
     if (checkedScopes.length === 0) {
-      this.showToast('Please select at least one scope.', 'error');
+      this.showToast('Please select or specify at least one scope.', 'error');
       return;
     }
 
@@ -1485,6 +1502,7 @@ class BallomConsole {
     const a = this.state.larvae[currentSlug];
     if (!a) return;
     document.getElementById('edit-alias-current-slug').value = currentSlug;
+    document.getElementById('edit-alias-prefix').value = a.prefix !== undefined ? (a.prefix || 'root') : 's';
     document.getElementById('edit-alias-slug').value = a.slug || '';
     document.getElementById('edit-alias-target').value = a.targetUrl || '';
     document.getElementById('edit-alias-base').value = a.baseUrl || '';
@@ -1498,15 +1516,18 @@ class BallomConsole {
     const a = this.state.larvae[currentSlug];
     if (!a) return;
 
+    const prefix = document.getElementById('edit-alias-prefix').value;
     const newSlug = document.getElementById('edit-alias-slug').value.trim().toLowerCase().replace(/[^a-z0-9-_]/g, '');
     const targetUrl = document.getElementById('edit-alias-target').value.trim();
     const baseUrl = document.getElementById('edit-alias-base').value.trim();
     const expiry = document.getElementById('edit-alias-expiry').value;
 
     if (newSlug !== currentSlug && this.state.larvae[newSlug]) {
-      this.showToast(`Slug /s/${newSlug} is already in use.`, 'error');
+      this.showToast(`Slug /${newSlug} is already in use.`, 'error');
       return;
     }
+
+    const cleanPrefix = (prefix === 'root' || prefix === '') ? '' : prefix;
 
     // Rename in state if slug changed
     if (newSlug !== currentSlug) {
@@ -1515,25 +1536,28 @@ class BallomConsole {
       this.state.larvae[newSlug] = a;
     }
 
+    a.prefix = cleanPrefix;
     a.targetUrl = targetUrl;
     a.baseUrl = baseUrl || undefined;
     a.expiresAt = expiry ? new Date(expiry).toISOString() : undefined;
 
+    const cdnPath = cleanPrefix ? `${cleanPrefix}/${a.slug}/index.html` : `${a.slug}/index.html`;
+
     // Republish redirect HTML
     if (this.state.configured) {
       const redirectHtml = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta http-equiv="refresh" content="0; url=${targetUrl}"><title>Redirecting…</title><script>window.location.replace("${targetUrl}");</script></head><body><p>Redirecting to <a href="${targetUrl}">${targetUrl}</a>…</p></body></html>`;
-      await this.writeCdnFile(`s/${newSlug}/index.html`, redirectHtml, `Update Larvae alias /s/${newSlug}`);
+      await this.writeCdnFile(cdnPath, redirectHtml, `Update Larvae alias ${cdnPath}`);
     }
 
     this.state.auditLog.push({
       timestamp: new Date().toISOString(),
       action: 'larvae:update',
       entity: 'alias',
-      entityId: newSlug,
-      metadata: { targetUrl, slug: newSlug }
+      entityId: a.slug,
+      metadata: { targetUrl, slug: a.slug, prefix: cleanPrefix }
     });
 
-    await this.saveState(`Updated Larvae Alias /s/${newSlug}`);
+    await this.saveState(`Updated Larvae Alias ${cdnPath}`);
     this.closeModal('edit-alias-modal');
     this.showToast('Short Link updated successfully!', 'success');
     this.renderAll();
@@ -1593,10 +1617,16 @@ class BallomConsole {
     document.getElementById('edit-key-name').value = k.name || '';
     document.getElementById('edit-key-expiry').value = k.expiresAt ? k.expiresAt.slice(0, 10) : '';
 
+    const standardScopes = ['*', 'read', 'write', 'gateway:invoke', 'larvae:create', 'domain:manage'];
+    const customScopes = (k.scopes || []).filter(s => !standardScopes.includes(s));
+
     const checkboxes = document.querySelectorAll('input[name="edit-key-scopes"]');
     checkboxes.forEach(cb => {
       cb.checked = (k.scopes || []).includes(cb.value);
     });
+
+    const customInput = document.getElementById('edit-key-custom-scopes');
+    if (customInput) customInput.value = customScopes.join(', ');
 
     this.openModal('edit-key-modal');
   }
@@ -1609,9 +1639,17 @@ class BallomConsole {
 
     const name = document.getElementById('edit-key-name').value.trim();
     const expiry = document.getElementById('edit-key-expiry').value;
+    const customScopesStr = (document.getElementById('edit-key-custom-scopes')?.value || '').trim();
 
     const checkboxes = document.querySelectorAll('input[name="edit-key-scopes"]:checked');
     const checkedScopes = Array.from(checkboxes).map(cb => cb.value);
+
+    if (customScopesStr) {
+      const customArr = customScopesStr.split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
+      customArr.forEach(s => {
+        if (!checkedScopes.includes(s)) checkedScopes.push(s);
+      });
+    }
 
     k.name = name;
     k.scopes = checkedScopes.length > 0 ? checkedScopes : ['read'];
