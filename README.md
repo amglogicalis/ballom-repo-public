@@ -122,10 +122,15 @@ $env:GITHUB_TOKEN="ghp_your_github_personal_access_token"
 
 ## 💻 CLI Commands Reference
 
-### 🌐 Launch Web Console
+### 🌐 Abrir Consola Web Local (Offline en Localhost)
 ```bash
+# Abrir en puerto por defecto (http://localhost:3720)
 ballom console
+
+# O con puerto personalizado:
+ballom studio --port 4000
 ```
+*Inicia un servidor HTTP local en `http://localhost:3720` (o el puerto configurado) para administrar Ballom de forma 100% privada sin depender de Internet. Si el puerto está ocupado, detecta automáticamente el siguiente disponible.*
 
 ### 🎭 Feromask (Phantom Cloaking)
 ```bash
